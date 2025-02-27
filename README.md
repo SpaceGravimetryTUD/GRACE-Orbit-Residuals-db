@@ -46,10 +46,10 @@ pip install sqlalchemy psycopg2-binary geoalchemy2 pandas geopandas
 Run the following to create tables:
 
 ```bash
-python -c "from models import init_db; init_db(); print('Database initialized!')"
+python models.py
  ```
 
-Verify inside PostgreSQL:
+Verify inside PostgreSQL the sattelite_data:
 
 ```
 docker exec -it postgis_container psql -U user -d geospatial_db -c "\d satellite_data;"
