@@ -33,12 +33,7 @@ docker ps
 ### 4️⃣ Install Python Dependencies
 
 ```bash
-pip install -r requirements.txt
-```
-If any of the requirements hasn't been installed, do so!
-
-```bash
-pip install sqlalchemy psycopg2-binary geoalchemy2 pandas geopandas
+poetry install
 ```
 
 ### 5️⃣ Initialize the Database
@@ -46,7 +41,10 @@ pip install sqlalchemy psycopg2-binary geoalchemy2 pandas geopandas
 Run the following to create tables:
 
 ```bash
-python models.py
+poetry run python
+>>> import src.models
+>>> src.models.init_db()
+>>> exit()
  ```
 
 Verify inside PostgreSQL the sattelite_data:
