@@ -6,7 +6,9 @@ This project sets up a scalable geospatial data processing pipeline using **Post
 
 ### 1️⃣ Prerequisites
 Ensure you have the following installed:
-- **Docker & Docker Compose** ([Installation Guide](https://docs.docker.com/compose/install/))
+- **Docker & Docker Compose**
+	- Installation Guide for [Docker Engine on Ubuntu](https://docs.docker.com/compose/install/)
+	- Installation Guide for [Docker Compose standalone on Linux](https://docs.docker.com/compose/install/standalone/#on-linux)
 - **Python 3.8+**
 - **pip** package manager
 
