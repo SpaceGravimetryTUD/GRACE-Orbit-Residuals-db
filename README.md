@@ -15,7 +15,7 @@ Further, ensure you have the following installed in you Unix environment:
 - **Python 3.8+**
 - **pip** package manager
 
-Note: In the [Docker website](https://docs.docker.com/) you may see mentioned that WSL users should install Docker Desktop. For this project we opt for **not** following this advice. We succeeded to reproduce the steps bellow by following instructions meant for Linux/Ubuntu system, even when using WSL2. By using Docker Desktop we do not guarantee that the same reproduction will be successful.
+Note: In the [Docker website](https://docs.docker.com/) you may see mentioned that WSL users should install Docker Desktop instead of following installation guides for Docker Engine & Docker Compose on Linux/Ubuntu system. For this project we opt for **not** following this advice. By following the Linux/Ubuntu installation guides we succeed to reproduce the steps bellow, even when using WSL2. By using Docker Desktop instead, we cannot guarantee that the same reproduction will be successful.
 
 ### 2️⃣ Clone the Repository
 ```bash
