@@ -5,12 +5,17 @@ This project sets up a scalable geospatial data processing pipeline using **Post
 ## 🚀 Quick Start
 
 ### 1️⃣ Prerequisites
-Ensure you have the following installed:
+
+For this project we work on Unix environment. In case of using a Windows machine, we recommend you to [install the Windows Subsystem for Linux (WLS2)](https://learn.microsoft.com/en-us/windows/wsl/install) and follow the steps recommended for Linux/Ubuntu.
+
+Further, ensure you have the following installed in you Unix environment:
 - **Docker & Docker Compose**
 	- Installation Guide for [Docker Engine on Ubuntu](https://docs.docker.com/compose/install/)
 	- Installation Guide for [Docker Compose standalone on Linux](https://docs.docker.com/compose/install/standalone/#on-linux)
 - **Python 3.8+**
 - **pip** package manager
+
+Note: In the [Docker website](https://docs.docker.com/) you may see mentioned that WSL users should install Docker Desktop. I would like to clarify that we have not followed this advice and succeded to reproduce the following steps by doing so.
 
 ### 2️⃣ Clone the Repository
 ```bash
