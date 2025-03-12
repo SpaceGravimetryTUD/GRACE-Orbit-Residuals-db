@@ -27,7 +27,7 @@ Ensure the following dependencies are installed:
 - **Python 3.8+**
 - **pip** package manager
 
-> **Note:** We recommend installing Docker Engine & Docker Compose using the Linux/Ubuntu installation guides, even when using WSL2, rather than using Docker Desktop. This ensures compatibility with the steps below.
+> **Note:** We recommend installing Docker Engine & Docker Compose using the Linux/Ubuntu installation guides, if you are in a windows machine we recommend you use WSL2 (Windows Linux Subsystem).
 
 > **Production Use:** We recommend using **Podman** instead of Docker for production environments, as it is compatible with Docker commands and provides better security and rootless containerization. We plan to migrate fully to Podman in the future.
 
