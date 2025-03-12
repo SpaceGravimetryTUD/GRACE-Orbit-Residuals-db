@@ -1,23 +1,38 @@
-# Geospatial Data Processing Stack
+# GRACE Geospatial Data Processing Stack
 
-This project sets up a scalable geospatial data processing pipeline using **PostgreSQL + PostGIS**, **SQLAlchemy**, and **Docker Compose**. It allows for efficient ingestion, validation, and querying of geospatial satellite data.
+This project sets up a scalable geospatial data processing pipeline using **PostgreSQL + PostGIS**, **SQLAlchemy**, and **Docker Compose**. It facilitates efficient ingestion, validation, and querying of high-frequency satellite data from the GRACE mission. 
+
+## 🌍 Context & Background
+
+We work with high-frequency geospatial time-series data from the GRACE satellite mission, specifically Level-1B range-rate residuals derived from inter-satellite Ka-band observations. These residuals may contain unexploited high-frequency geophysical signals used for scientific applications.
+
+### Key dataset characteristics:
+
+- Temporal resolution: 5-second intervals
+- Geospatial attributes: Latitude, longitude, altitude for two satellites (GRACE A & B)
+- Data volume: 2002–2017, \~6.3 million records per year (\~95 million total)
+- Queries of interest: Filtering by time span, spatial regions, and signal characteristics (statistical analysis)
 
 ## 🚀 Quick Start
 
 ### 1️⃣ Prerequisites
 
-For this project we work on Unix environment. In case of using a Windows machine, we recommend you to [install the Windows Subsystem for Linux (WLS2)](https://learn.microsoft.com/en-us/windows/wsl/install) and follow the steps recommended for Linux/Ubuntu.
+This project is designed to run in a Unix environment. If you are using a Windows machine, we recommend installing the [Windows Subsystem for Linux (WSL2)](https://learn.microsoft.com/en-us/windows/wsl/install) and following the steps recommended for Linux/Ubuntu.
 
-Further, ensure you have the following installed in you Unix environment:
-- **Docker & Docker Compose**
-	- Installation Guide for [Docker Engine on Ubuntu](https://docs.docker.com/compose/install/)
-	- Installation Guide for [Docker Compose standalone on Linux](https://docs.docker.com/compose/install/standalone/#on-linux)
+Ensure the following dependencies are installed:
+
+- **Docker & Docker Compose** (for development; see note below on production use)
+  - [Docker Engine on Ubuntu](https://docs.docker.com/compose/install/)
+  - [Docker Compose standalone on Linux](https://docs.docker.com/compose/install/standalone/#on-linux)
 - **Python 3.8+**
 - **pip** package manager
 
-Note: In the [Docker website](https://docs.docker.com/) you may see mentioned that WSL users should install Docker Desktop instead of following installation guides for Docker Engine & Docker Compose on Linux/Ubuntu system. For this project we opt for **not** following this advice. By following the Linux/Ubuntu installation guides we succeed to reproduce the steps bellow, even when using WSL2. By using Docker Desktop instead, we cannot guarantee that the same reproduction will be successful.
+> **Note:** We recommend installing Docker Engine & Docker Compose using the Linux/Ubuntu installation guides, even when using WSL2, rather than using Docker Desktop. This ensures compatibility with the steps below.
+
+> **Production Use:** We recommend using **Podman** instead of Docker for production environments, as it is compatible with Docker commands and provides better security and rootless containerization. We plan to migrate fully to Podman in the future.
 
 ### 2️⃣ Clone the Repository
+
 ```bash
 git clone https://github.com/your-org/your-repo.git
 cd your-repo
@@ -29,7 +44,7 @@ cd your-repo
 docker-compose up -d
 ```
 
-This starts a PostGIS-powered PostgreSQL database.
+This launches a PostgreSQL database with PostGIS support.
 
 Verify the container is running:
 
@@ -45,18 +60,18 @@ poetry install
 
 ### 5️⃣ Initialize the Database
 
-Run the following to create tables:
+To create tables, run:
 
 ```bash
 poetry run python
 >>> import src.models
 >>> src.models.init_db()
 >>> exit()
- ```
-
-Verify inside PostgreSQL the sattelite_data:
-
 ```
+
+Verify the database schema inside PostgreSQL:
+
+```bash
 docker exec -it postgis_container psql -U user -d geospatial_db -c "\d satellite_data;"
 ```
 
@@ -65,4 +80,16 @@ docker exec -it postgis_container psql -U user -d geospatial_db -c "\d satellite
 ```bash
 docker exec -it postgis_container psql -U user -d geospatial_db
 ```
+
+---
+
+## 📜 Licensing & Waiver
+
+Licensed under MIT, subject to the following waiver:
+
+**Technische Universiteit Delft** hereby disclaims all copyright interest in the program "GRACE Geospatial Data Processing Stack" written by the Author(s).
+
+\*\*Prof.dr.ir. \*\***, Dean of Aerospace Engineering at TU Delft**
+
+Copyright (c) 2025 .
 
