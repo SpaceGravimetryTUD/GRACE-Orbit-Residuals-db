@@ -89,7 +89,7 @@ Licensed under MIT, subject to the following waiver:
 
 **Technische Universiteit Delft** hereby disclaims all copyright interest in the program "GRACE Geospatial Data Processing Stack" written by the Author(s).
 
-\*\*Prof.dr.ir. \*\***, Dean of Aerospace Engineering at TU Delft**
+***Prof. H.G.C. (Henri) Werij***, Dean of Aerospace Engineering at TU Delft**
 
 Copyright (c) 2025 .
 
