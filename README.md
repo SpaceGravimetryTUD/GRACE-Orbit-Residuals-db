@@ -58,14 +58,23 @@ docker ps
 poetry install
 ```
 
-### 5️⃣ Initialize the Database
+### 5️⃣ Set file location for data to be uploaded into the database
 
-To create tables, run:
+For demonstration purposes we are going to use the following file:
+
+'''bash
+data/flat-data-test.pkl
+''' 
+
+### 6️⃣ Initialize the Database
+
+To create and populate tables, run:
 
 ```bash
 poetry run python
 >>> import src.models
 >>> src.models.init_db()
+>>> src.models.populate_db('data/flat-data-test.pkl')
 >>> exit()
 ```
 
@@ -75,7 +84,13 @@ Verify the database schema inside PostgreSQL:
 docker exec -it postgis_container psql -U user -d geospatial_db -c "\d satellite_data;"
 ```
 
-### 6️⃣ (Optional) Connect to PostgreSQL
+To display data uploaded into the table satellite_data:
+
+```bash
+docker exec -it postgis_container psql -U user -d geospatial_db -c "TABLE satellite_data"
+```
+
+### 7 (Optional) Connect to PostgreSQL
 
 ```bash
 docker exec -it postgis_container psql -U user -d geospatial_db
