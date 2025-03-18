@@ -3,6 +3,8 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from geoalchemy2 import Geometry
 
+import pandas as pd
+
 Base = declarative_base()
 
 class SatelliteData(Base):
@@ -28,3 +30,11 @@ SessionLocal = sessionmaker(bind=engine)
 
 def init_db():
     Base.metadata.create_all(engine)
+
+def populate_db(filepath: str):
+
+    if filepath.endswith('.pkl'):
+        df = pd.read_pickle(r"{}".format(filepath))
+        print(df)
+    else:
+        raise ValueError("File type not recognized. Please select a file of one of the following types: '.pkl'")
