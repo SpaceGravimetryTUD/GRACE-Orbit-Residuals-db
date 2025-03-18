@@ -12,16 +12,16 @@ class SatelliteData(Base):
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     timestamp = Column(Float, nullable=False, index=True)
-    month_label = Column(String, nullable=False)
-    source = Column(String, nullable=False)  # 'original' or 'borrowed'
+    month_label = Column(String, nullable=True)
+    source = Column(String, nullable=True)  # 'original' or 'borrowed'
     latitude_A = Column(Float, nullable=False)
     longitude_A = Column(Float, nullable=False)
     altitude_A = Column(Float)
     latitude_B = Column(Float, nullable=False)
     longitude_B = Column(Float, nullable=False)
     altitude_B = Column(Float)
-    geom_A = Column(Geometry('POINT', srid=4326), nullable=False)
-    geom_B = Column(Geometry('POINT', srid=4326), nullable=False)
+    geom_A = Column(Geometry('POINT', srid=4326), nullable=True)
+    geom_B = Column(Geometry('POINT', srid=4326), nullable=True)
 
 # Database setup
 DATABASE_URL = "postgresql://user:password@localhost:5432/geospatial_db"
@@ -35,6 +35,7 @@ def populate_db(filepath: str):
 
     if filepath.endswith('.pkl'):
         df = pd.read_pickle(r"{}".format(filepath))
-        print(df)
+        df.to_sql(index=False, if_exists="append", name='satellite_data',
+                  con=engine,  method="multi", chunksize=5)
     else:
         raise ValueError("File type not recognized. Please select a file of one of the following types: '.pkl'")
