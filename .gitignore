@@ -105,3 +105,6 @@ ehthumbs.db
 # Docker
 docker-compose.override.yml
 .env
+
+# Data
+data/
