@@ -17,7 +17,7 @@ def populate_db(filepath: str, engine) -> None:
     df = pd.read_pickle(filepath).reset_index()
     df = df[SATELLITE_FIELDS]
     df.to_sql(index=False, if_exists="append", name='satellite_data',
-              con=engine, method="multi", chunksize=5)
+              con=engine, method="multi")
 
 
 def add_test_row(filepath: str, engine) -> None:
