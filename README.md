@@ -58,14 +58,23 @@ docker ps
 poetry install
 ```
 
-### 5️⃣ Initialize the Database
+### 5️⃣ Set file location for data to be uploaded into the database
 
-To create tables, run:
+For demonstration purposes we are going to use the following file:
+
+'''bash
+data/flat-data-test.pkl
+''' 
+
+### 6️⃣ Initialize the Database
+
+To create and populate tables, run:
 
 ```bash
 poetry run python
 >>> import src.models
 >>> src.models.init_db()
+>>> src.models.populate_db('data/flat-data-test.pkl')
 >>> exit()
 ```
 
@@ -75,13 +84,70 @@ Verify the database schema inside PostgreSQL:
 docker exec -it postgis_container psql -U user -d geospatial_db -c "\d satellite_data;"
 ```
 
-### 6️⃣ (Optional) Connect to PostgreSQL
+To display data uploaded into the table satellite_data:
+
+```bash
+docker exec -it postgis_container psql -U user -d geospatial_db -c "TABLE satellite_data"
+```
+
+### 7 (Optional) Connect to PostgreSQL
 
 ```bash
 docker exec -it postgis_container psql -U user -d geospatial_db
 ```
 
----
+## ⚙️ Environment Configuration
+
+To run the project locally — including the tests — you need to create a `.env` file in the project root directory. This file should define the necessary environment variables for database access and test data.
+
+### Required variables:
+
+- `DATABASE_URL`: the full SQLAlchemy connection string to the PostGIS-enabled PostgreSQL instance
+- `TEST_DATA_PATH`: path to the `.pkl` file used for inserting sample satellite data during testing
+
+### 📄 Example `.env` file
+
+```ini
+# .env
+DATABASE_URL=postgresql://user:password@localhost:5432/geospatial_db
+TEST_DATA_PATH=data/flat-data-test.pkl
+```
+
+Make sure the database container is running (e.g., via `docker-compose up -d`) before running any scripts or tests.
+
+
+### 🧪 Running Tests (Requires Local Database)
+
+Before running the test suite, you **must ensure that the PostgreSQL + PostGIS database is running locally** and properly initialized.
+
+The tests are designed to validate the data ingestion, model behavior, and query logic against a real database backend, not mocks or in-memory databases.
+
+Follow these steps:
+
+1. **Start the database with Docker Compose (if not already running):**
+
+   ```bash
+   docker-compose up -d
+   ```
+
+2. **Initialize the database with schema and sample data:**
+
+   ```bash
+   poetry run python
+   >>> import src.models
+   >>> src.models.init_db()
+   >>> src.models.populate_db('data/flat-data-test.pkl')
+   >>> exit()
+   ```
+
+3. **Run the tests using Poetry:**
+
+   ```bash
+   poetry run pytest
+   ```
+
+> ⚠️ **Important:** Tests will fail if the database is not running or not properly initialized. Ensure the `satellite_data` table exists and is populated with test data.
+
 
 ## 📜 Licensing & Waiver
 
