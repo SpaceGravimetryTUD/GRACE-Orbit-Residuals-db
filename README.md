@@ -29,7 +29,16 @@ Ensure the following dependencies are installed:
 
 > **Note:** We recommend installing Docker Engine & Docker Compose using the Linux/Ubuntu installation guides, if you are in a windows machine we recommend you use WSL2 (Windows Linux Subsystem).
 
-> **Production Use:** We recommend using **Podman** instead of Docker for production environments, as it is compatible with Docker commands and provides better security and rootless containerization. We plan to migrate fully to Podman in the future.
+>#### Production Use
+
+We recommend using **Podman** instead of Docker for production environments, as it is compatible with Docker commands and provides better security and rootless containerization. We plan to migrate fully to Podman in the future.
+
+Ensure the following dependencies are installed:
+
+ - **Podman** via `sudo apt -y install podman`
+ - **Python 3.8+**
+ - **pip** package manager
+ - **podman-compose** via pip
 
 ### 2️⃣ Clone the Repository
 
@@ -38,10 +47,10 @@ git clone https://github.com/your-org/your-repo.git
 cd your-repo
 ```
 
-### 3️⃣ Start the Database with Docker Compose
+### 3️⃣ Start the Database with Podman Compose
 
 ```bash
-docker-compose up -d
+podman-compose -f ./docker-compose.yml up -d
 ```
 
 This launches a PostgreSQL database with PostGIS support.
