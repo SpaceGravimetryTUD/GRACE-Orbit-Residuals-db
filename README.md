@@ -66,16 +66,37 @@ For demonstration purposes we are going to use the following file:
 data/flat-data-test.pkl
 ''' 
 
+### ⚙️ Environment Configuration
+
+To run the project locally — including the tests — you need to create a `.env` file in the project root directory. This file should define the necessary environment variables for database access and test data.
+
+### Required variables:
+
+- `DATABASE_URL`: the full SQLAlchemy connection string to the PostGIS-enabled PostgreSQL instance
+- `TEST_DATA_PATH`: path to the `.pkl` file used for inserting sample satellite data during testing
+
+### 📄 Example `.env` file
+
+```ini
+# .env
+DATABASE_URL=postgresql://user:password@localhost:5432/geospatial_db
+TEST_DATA_PATH=data/flat-data-test.pkl
+```
+
+Make sure the database container is running (e.g., via `docker-compose up -d`) before running any scripts or tests.
+
 ### 6️⃣ Initialize the Database
 
 To create and populate tables, run:
 
 ```bash
-poetry run python
->>> import src.models
->>> src.models.init_db()
->>> src.models.populate_db('data/flat-data-test.pkl')
->>> exit()
+# Import the functions from their correct locations
+from src.models import init_db
+from scripts.populate_db import populate_db
+
+# Call the functions
+init_db()
+populate_db('data/flat-data-test.pkl')
 ```
 
 Verify the database schema inside PostgreSQL:
@@ -96,25 +117,6 @@ docker exec -it postgis_container psql -U user -d geospatial_db -c "TABLE satell
 docker exec -it postgis_container psql -U user -d geospatial_db
 ```
 
-## ⚙️ Environment Configuration
-
-To run the project locally — including the tests — you need to create a `.env` file in the project root directory. This file should define the necessary environment variables for database access and test data.
-
-### Required variables:
-
-- `DATABASE_URL`: the full SQLAlchemy connection string to the PostGIS-enabled PostgreSQL instance
-- `TEST_DATA_PATH`: path to the `.pkl` file used for inserting sample satellite data during testing
-
-### 📄 Example `.env` file
-
-```ini
-# .env
-DATABASE_URL=postgresql://user:password@localhost:5432/geospatial_db
-TEST_DATA_PATH=data/flat-data-test.pkl
-```
-
-Make sure the database container is running (e.g., via `docker-compose up -d`) before running any scripts or tests.
-
 
 ### 🧪 Running Tests (Requires Local Database)
 
@@ -132,13 +134,15 @@ Follow these steps:
 
 2. **Initialize the database with schema and sample data:**
 
-   ```bash
-   poetry run python
-   >>> import src.models
-   >>> src.models.init_db()
-   >>> src.models.populate_db('data/flat-data-test.pkl')
-   >>> exit()
-   ```
+```bash
+# Import the functions from their correct locations
+from src.models import init_db
+from scripts.populate_db import populate_db
+
+# Call the functions
+init_db()
+populate_db('data/flat-data-test.pkl')
+```
 
 3. **Run the tests using Poetry:**
 
