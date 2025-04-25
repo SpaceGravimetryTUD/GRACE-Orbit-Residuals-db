@@ -2,7 +2,7 @@ import pandas as pd
 
 # Shared list of fields
 SATELLITE_FIELDS = [
-    "timestamp",
+    "datetime", "timestamp",
     "latitude_A", "longitude_A", "altitude_A",
     "latitude_B", "longitude_B", "altitude_B"
 ]

@@ -7,14 +7,6 @@ from src.models import init_db  # Make sure this points to your correct init_db 
 
 load_dotenv()
 
-@pytest.fixture(scope="session")
-def engine():
-    db_url = os.getenv("DATABASE_URL")
-    if not db_url:
-        raise RuntimeError("DATABASE_URL not set in .env")
-    return create_engine(db_url)
-
-
 @pytest.fixture(scope="session", autouse=True)
 def setup_database(engine):
     """Ensure the database schema is created before any tests run."""
