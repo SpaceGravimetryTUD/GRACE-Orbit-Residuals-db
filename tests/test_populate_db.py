@@ -11,7 +11,7 @@ load_dotenv()
 def setup_database(engine):
     """Ensure the database schema is created before any tests run."""
     init_db()
-
+    
 
 @pytest.fixture
 def clear_test_row(engine):
@@ -28,9 +28,10 @@ def test_add_test_row(engine, clear_test_row):
     assert test_file and os.path.exists(test_file), "Missing or invalid TEST_DATA_PATH"
 
     # Insert one row
-    add_test_row(test_file, engine)
+    add_test_row(test_file)
 
     # Check it exists
     with engine.connect() as conn:
         result = conn.execute(text("SELECT COUNT(*) FROM satellite_data")).scalar()
         assert result >= 1
+        
