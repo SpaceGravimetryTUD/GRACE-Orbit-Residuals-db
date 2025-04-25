@@ -1,7 +1,7 @@
 import os
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, Column, Float, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import create_engine, Column, Float, Integer, String, DateTime
+from sqlalchemy.orm import declarative_base
 from sqlalchemy.orm import sessionmaker
 from geoalchemy2 import Geometry
 
@@ -23,6 +23,7 @@ class SatelliteData(Base):
     latitude_B = Column(Float, nullable=False)
     longitude_B = Column(Float, nullable=False)
     altitude_B = Column(Float)
+    datetime = Column(DateTime, nullable=True)
     #geom_A = Column(Geometry('POINT', srid=4326), nullable=True)
     #geom_B = Column(Geometry('POINT', srid=4326), nullable=True)
 
