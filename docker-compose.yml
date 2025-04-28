@@ -1,6 +1,6 @@
 services:
   db:
-    image: postgis/postgis:15-3.3
+    image: docker.io/postgis/postgis:15-3.3
     container_name: postgis_container
     restart: always
     environment:

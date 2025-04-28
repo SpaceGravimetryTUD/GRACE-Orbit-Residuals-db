@@ -29,19 +29,34 @@ Ensure the following dependencies are installed:
 
 > **Note:** We recommend installing Docker Engine & Docker Compose using the Linux/Ubuntu installation guides, if you are in a windows machine we recommend you use WSL2 (Windows Linux Subsystem).
 
-> **Production Use:** We recommend using **Podman** instead of Docker for production environments, as it is compatible with Docker commands and provides better security and rootless containerization. We plan to migrate fully to Podman in the future.
+#### Production Use
+
+We recommend using **Podman** instead of Docker for production environments, as it is compatible with Docker commands and provides better security and rootless containerization. We plan to migrate fully to Podman in the future.
+
+Ensure the following dependencies are installed:
+
+ - **Podman** via `sudo apt -y install podman`
+ - **Python 3.8+**
+ - **pip** package manager
+ - **podman-compose** via pip
 
 ### 2️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/your-org/your-repo.git
-cd your-repo
+git clone https://github.com/SpaceGravimetryTUD/GRACE-Orbit-Residuals-db/tree/main
+cd GRACE-Orbit-Residuals-db
 ```
 
-### 3️⃣ Start the Database with Docker Compose
+### 3️⃣ Install Python Dependencies
 
 ```bash
-docker-compose up -d
+poetry install
+```
+
+### 4️⃣ Start the Database with Podman Compose
+
+```bash
+podman-compose -f ./docker-compose.yml up -d
 ```
 
 This launches a PostgreSQL database with PostGIS support.
@@ -49,13 +64,7 @@ This launches a PostgreSQL database with PostGIS support.
 Verify the container is running:
 
 ```bash
-docker ps
-```
-
-### 4️⃣ Install Python Dependencies
-
-```bash
-poetry install
+podman ps
 ```
 
 ### 5️⃣ Set file location for data to be uploaded into the database
@@ -83,7 +92,7 @@ DATABASE_URL=postgresql://user:password@localhost:5432/geospatial_db
 TEST_DATA_PATH=data/flat-data-test.pkl
 ```
 
-Make sure the database container is running (e.g., via `docker-compose up -d`) before running any scripts or tests.
+Make sure the database container is running (e.g., via `podman-compose -f ./docker-compose.yml up -d`) before running any scripts or tests.
 
 ### 6️⃣ Initialize the Database
 
@@ -102,21 +111,20 @@ populate_db('data/flat-data-test.pkl')
 Verify the database schema inside PostgreSQL:
 
 ```bash
-docker exec -it postgis_container psql -U user -d geospatial_db -c "\d satellite_data;"
+podman exec -it postgis_container psql -U user -d geospatial_db -c "\d satellite_data;"
 ```
 
 To display data uploaded into the table satellite_data:
 
 ```bash
-docker exec -it postgis_container psql -U user -d geospatial_db -c "TABLE satellite_data"
+podman exec -it postgis_container psql -U user -d geospatial_db -c "TABLE satellite_data"
 ```
 
 ### 7 (Optional) Connect to PostgreSQL
 
 ```bash
-docker exec -it postgis_container psql -U user -d geospatial_db
+podman exec -it postgis_container psql -U user -d geospatial_db
 ```
-
 
 ### 🧪 Running Tests (Requires Local Database)
 
