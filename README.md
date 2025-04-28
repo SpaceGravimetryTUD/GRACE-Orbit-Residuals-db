@@ -88,27 +88,20 @@ Make sure the database container is running (e.g., via `docker-compose up -d`) b
 ### 6️⃣ Initialize the Database
 
 To create and populate tables, run:
-
 ```bash
-# Import the functions from their correct locations
-from src.models import init_db
-from scripts.populate_db import populate_db
-
-# Call the functions
-init_db()
-populate_db('data/flat-data-test.pkl')
+poetry run python scripts/init_db.py 
 ```
 
 Verify the database schema inside PostgreSQL:
 
 ```bash
-docker exec -it postgis_container psql -U user -d geospatial_db -c "\d satellite_data;"
+docker exec -it postgis_container psql -U user -d geospatial_db -c "\d kbr_gravimetry;"
 ```
 
 To display data uploaded into the table satellite_data:
 
 ```bash
-docker exec -it postgis_container psql -U user -d geospatial_db -c "TABLE satellite_data"
+docker exec -it postgis_container psql -U user -d geospatial_db -c "TABLE kbr_gravimetry;"
 ```
 
 ### 7 (Optional) Connect to PostgreSQL

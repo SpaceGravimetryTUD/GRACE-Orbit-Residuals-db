@@ -1,34 +1,43 @@
 import os
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, Column, Float, Integer, String, DateTime
-from sqlalchemy.orm import declarative_base
-from sqlalchemy.orm import sessionmaker
-from geoalchemy2 import Geometry
+from sqlalchemy.orm import declarative_base, sessionmaker
 
-# Load environment variables from .env file
+# If you want spatial queries later, you can reintroduce geoalchemy2
+# from geoalchemy2 import Geometry  
+
+# Load environment variables
 load_dotenv()
 
 Base = declarative_base()
 
-class SatelliteData(Base):
-    __tablename__ = 'satellite_data'
+class KBRGravimetry(Base):
+    __tablename__ = 'kbr_gravimetry'
     
     id = Column(Integer, primary_key=True, autoincrement=True)
-    timestamp = Column(Float, nullable=False, index=True)
-    #month_label = Column(String, nullable=True)
-    #source = Column(String, nullable=True)  # 'original' or 'borrowed'
-    latitude_A = Column(Float, nullable=False)
-    longitude_A = Column(Float, nullable=False)
-    altitude_A = Column(Float)
-    latitude_B = Column(Float, nullable=False)
-    longitude_B = Column(Float, nullable=False)
-    altitude_B = Column(Float)
-    datetime = Column(DateTime, nullable=True)
-    #geom_A = Column(Geometry('POINT', srid=4326), nullable=True)
-    #geom_B = Column(Geometry('POINT', srid=4326), nullable=True)
+    timestamp = Column(Float, nullable=False, index=True)  # seconds since 2000-01-01
+    postfit = Column(Float)  # Post-fit residuals (m/s)
+    observation_vector = Column(Float)  # Pre-fit residuals (m/s)
+    up_combined = Column(Float)  # Updated total fit (m/s)
+    up_local = Column(Float)  # Local component (m/s)
+    up_common = Column(Float)  # Common component (m/s)
+    up_global = Column(Float)  # Geo-fit component (m/s)
+
+    latitude_A = Column(Float, nullable=False)  # degrees
+    longitude_A = Column(Float, nullable=False)  # degrees
+    altitude_A = Column(Float)  # km
+    shadow_A = Column(Integer)  # 0/1
+    adtrack_A = Column(Integer)  # 0 = descending, 1 = ascending
+
+    latitude_B = Column(Float, nullable=False)  # degrees
+    longitude_B = Column(Float, nullable=False)  # degrees
+    altitude_B = Column(Float)  # km
+    shadow_B = Column(Integer)  # 0/1
+    adtrack_B = Column(Integer)  # 0 = descending, 1 = ascending
+
+    datetime = Column(DateTime, nullable=True)  # optional: datetime for convenience
 
 # Database setup
-# Database setup using environment variable
 DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL is None:
     raise ValueError("DATABASE_URL not found in environment variables.")
