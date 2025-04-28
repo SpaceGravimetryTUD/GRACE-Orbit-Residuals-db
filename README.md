@@ -1,6 +1,6 @@
 # GRACE Geospatial Data Processing Stack
 
-This project sets up a scalable geospatial data processing pipeline using **PostgreSQL + PostGIS**, **SQLAlchemy**, and **Docker Compose**. It facilitates efficient ingestion, validation, and querying of high-frequency satellite data from the GRACE mission. 
+This project sets up a scalable geospatial data processing pipeline using **PostgreSQL + PostGIS**, **SQLAlchemy**, and **Podman Compose**. It facilitates efficient ingestion, validation, and querying of high-frequency satellite data from the GRACE mission. 
 
 ## 🌍 Context & Background
 
@@ -21,24 +21,11 @@ This project is designed to run in a Unix environment. If you are using a Window
 
 Ensure the following dependencies are installed:
 
-- **Docker & Docker Compose** (for development; see note below on production use)
-  - [Docker Engine on Ubuntu](https://docs.docker.com/compose/install/)
-  - [Docker Compose standalone on Linux](https://docs.docker.com/compose/install/standalone/#on-linux)
-- **Python 3.8+**
-- **pip** package manager
-
-> **Note:** We recommend installing Docker Engine & Docker Compose using the Linux/Ubuntu installation guides, if you are in a windows machine we recommend you use WSL2 (Windows Linux Subsystem).
-
-#### Production Use
-
-We recommend using **Podman** instead of Docker for production environments, as it is compatible with Docker commands and provides better security and rootless containerization. We plan to migrate fully to Podman in the future.
-
-Ensure the following dependencies are installed:
-
  - **Podman** via `sudo apt -y install podman`
  - **Python 3.8+**
- - **pip** package manager
- - **podman-compose** via pip
+ - **Poetry** for dependency management and packaging in Python. Check installation instuctions [here](https://python-poetry.org/docs/#installation)
+
+ > **Note**: We recommend using **Podman** instead of **Docker** for production environments, as it is compatible with Docker commands and provides better security and rootless containerization.
 
 ### 2️⃣ Clone the Repository
 
@@ -47,10 +34,11 @@ git clone https://github.com/SpaceGravimetryTUD/GRACE-Orbit-Residuals-db/tree/ma
 cd GRACE-Orbit-Residuals-db
 ```
 
-### 3️⃣ Install Python Dependencies
+### 3️⃣ Install Python Dependencies and activate virtual environment
 
 ```bash
 poetry install
+. .venv/bin/activate
 ```
 
 ### 4️⃣ Start the Database with Podman Compose
@@ -75,16 +63,16 @@ For demonstration purposes we are going to use the following file:
 data/flat-data-test.pkl
 ''' 
 
-### ⚙️ Environment Configuration
+### 6️⃣ ⚙️ Environment Configuration
 
 To run the project locally — including the tests — you need to create a `.env` file in the project root directory. This file should define the necessary environment variables for database access and test data.
 
-### Required variables:
+#### Required variables:
 
 - `DATABASE_URL`: the full SQLAlchemy connection string to the PostGIS-enabled PostgreSQL instance
 - `TEST_DATA_PATH`: path to the `.pkl` file used for inserting sample satellite data during testing
 
-### 📄 Example `.env` file
+#### 📄 Example `.env` file
 
 ```ini
 # .env
@@ -94,9 +82,9 @@ TEST_DATA_PATH=data/flat-data-test.pkl
 
 Make sure the database container is running (e.g., via `podman-compose -f ./docker-compose.yml up -d`) before running any scripts or tests.
 
-### 6️⃣ Initialize the Database
+### 7 Initialize the Database
 
-To create and populate tables, run:
+To create and populate tables, run `poetry run python` and then:
 
 ```bash
 # Import the functions from their correct locations
@@ -120,11 +108,28 @@ To display data uploaded into the table satellite_data:
 podman exec -it postgis_container psql -U user -d geospatial_db -c "TABLE satellite_data"
 ```
 
-### 7 (Optional) Connect to PostgreSQL
+### 7 First query
+
+To try your first query, run `poetry run python` and then:
 
 ```bash
-podman exec -it postgis_container psql -U user -d geospatial_db
+# Import the functions from their correct locations
+from scripts.populate_db import first_query
+
+# Call the function
+run_firstquery()
 ```
+
+### 8 (Optional) Restart the Database with Podman Compose
+
+If for any reason you intend to restart the database from scratch, you can do so by running the following commands:
+
+```bash
+podman-compose down
+podman volume rm grace-orbit-residuals-db_postgres_data
+```
+
+> ⚠️ **Attention**: If database is populated, the data stored in the database will be permanently lost with this step. 
 
 ### 🧪 Running Tests (Requires Local Database)
 
@@ -134,10 +139,10 @@ The tests are designed to validate the data ingestion, model behavior, and query
 
 Follow these steps:
 
-1. **Start the database with Docker Compose (if not already running):**
+1. **Start the database with Podman Compose (if not already running):**
 
    ```bash
-   docker-compose up -d
+   podman-compose -f ./docker-compose.yml up -d
    ```
 
 2. **Initialize the database with schema and sample data:**
