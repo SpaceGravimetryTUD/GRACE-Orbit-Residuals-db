@@ -87,7 +87,7 @@ Make sure the database container is running (e.g., via `docker-compose up -d`) b
 
 ### 6️⃣ Initialize the Database
 
-To create and populate tables, run:
+To create and populate the database, run:
 ```bash
 poetry run python scripts/init_db.py 
 ```
@@ -104,12 +104,17 @@ To display data uploaded into the table satellite_data:
 docker exec -it postgis_container psql -U user -d geospatial_db -c "TABLE kbr_gravimetry;"
 ```
 
-### 7 (Optional) Connect to PostgreSQL
+### 7 Connect to PostgreSQL
 
 ```bash
 docker exec -it postgis_container psql -U user -d geospatial_db
 ```
 
+### 8 Enable the PostGIS extension
+
+```sql
+CREATE EXTENSION postgis;
+```
 
 ### 🧪 Running Tests (Requires Local Database)
 
