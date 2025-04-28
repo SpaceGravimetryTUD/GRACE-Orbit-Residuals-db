@@ -1,6 +1,6 @@
 from sqlalchemy import select, create_engine, and_
 import os
-from src.models import SatelliteData
+from src.models import KBRGravimetry
 from scripts.populate_db import SATELLITE_FIELDS
 from sqlalchemy.orm import Session
 
@@ -13,7 +13,7 @@ engine = create_engine(DATABASE_URL)
 def run_firstquery() -> None:
 
     with Session(engine) as session:
-        results = session.query(SatelliteData).limit(5).all()
+        results = session.query(KBRGravimetry).order_by(KBRGravimetry.id.desc()).limit(10).all()
 
         print('\t'.join(SATELLITE_FIELDS))
         for row in results:

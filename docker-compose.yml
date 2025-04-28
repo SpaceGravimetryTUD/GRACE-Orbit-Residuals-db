@@ -1,6 +1,6 @@
 services:
   postgis_container:
-    image: timescale/timescaledb-ha:pg14-oss-latest
+    image: docker.io/timescale/timescaledb-ha:pg14-oss-latest
     container_name: postgis_container
     restart: always
     environment:

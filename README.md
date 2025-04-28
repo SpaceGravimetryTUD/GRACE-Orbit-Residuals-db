@@ -41,7 +41,13 @@ poetry install
 . .venv/bin/activate
 ```
 
-### 4️⃣ Start the Database with Podman Compose
+### 4️⃣ Run the TimescaleDB Docker image
+
+```bash
+docker pull timescale/timescaledb-ha:pg14-oss-latest
+```
+
+### 5️⃣ Start the Database with Podman Compose
 
 ```bash
 podman-compose -f ./docker-compose.yml up -d
@@ -55,7 +61,13 @@ Verify the container is running:
 podman ps
 ```
 
-### 5️⃣ Set file location for data to be uploaded into the database
+### 6️⃣ Enable the PostGIS extension
+
+```bash
+podman exec -it postgis_container psql -U user -d geospatial_db -c "CREATE EXTENSION postgis;"
+```
+
+### 7 Set file location for data to be uploaded into the database
 
 For demonstration purposes we are going to use the following file:
 
@@ -63,7 +75,7 @@ For demonstration purposes we are going to use the following file:
 data/flat-data-test.pkl
 ''' 
 
-### 6️⃣ ⚙️ Environment Configuration
+### 8 ⚙️ Environment Configuration
 
 To run the project locally — including the tests — you need to create a `.env` file in the project root directory. This file should define the necessary environment variables for database access and test data.
 
@@ -82,7 +94,7 @@ TEST_DATA_PATH=data/flat-data-test.pkl
 
 Make sure the database container is running (e.g., via `podman-compose -f ./docker-compose.yml up -d`) before running any scripts or tests.
 
-### 7 Initialize the Database
+### 9 Initialize the Database
 
 To create and populate tables, run `poetry run python` and then:
 
@@ -93,34 +105,17 @@ poetry run python scripts/init_db.py
 Verify the database schema inside PostgreSQL:
 
 ```bash
-podman exec -it postgis_container psql -U user -d geospatial_db -c "\d satellite_data;"
+podman exec -it postgis_container psql -U user -d geospatial_db -c "\d kbr_gravimetry;"
 ```
 
-To display data uploaded into the table satellite_data:
+To display data uploaded into the table kbr_gravimetry:
 
 ```bash
-podman exec -it postgis_container psql -U user -d geospatial_db -c "TABLE satellite_data"
+podman exec -it postgis_container psql -U user -d geospatial_db -c "TABLE  kbr_gravimetry"
 ```
 
-### 7 First query
 
-To try your first query, run `poetry run python` and then:
-
-```bash
-# Import the functions from their correct locations
-from scripts.populate_db import first_query
-
-# Call the function
-run_firstquery()
-```
-
-### 8 Enable the PostGIS extension
-
-```sql
-CREATE EXTENSION postgis;
-```
-
-### 9 (Optional) Restart the Database with Podman Compose
+### 10 (Optional) Restart the Database with Podman Compose
 
 If for any reason you intend to restart the database from scratch, you can do so by running the following commands:
 
