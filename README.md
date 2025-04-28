@@ -117,31 +117,11 @@ Before running the test suite, you **must ensure that the PostgreSQL + PostGIS d
 
 The tests are designed to validate the data ingestion, model behavior, and query logic against a real database backend, not mocks or in-memory databases.
 
-Follow these steps:
-
-1. **Start the database with Docker Compose (if not already running):**
-
-   ```bash
-   docker-compose up -d
-   ```
-
-2. **Initialize the database with schema and sample data:**
+After following the steps above to set up the database, you can run the tests using:
 
 ```bash
-# Import the functions from their correct locations
-from src.models import init_db
-from scripts.populate_db import populate_db
-
-# Call the functions
-init_db()
-populate_db('data/flat-data-test.pkl')
+poetry run pytest
 ```
-
-3. **Run the tests using Poetry:**
-
-   ```bash
-   poetry run pytest
-   ```
 
 > ⚠️ **Important:** Tests will fail if the database is not running or not properly initialized. Ensure the `satellite_data` table exists and is populated with test data.
 

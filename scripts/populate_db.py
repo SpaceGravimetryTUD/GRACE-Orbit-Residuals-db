@@ -1,3 +1,4 @@
+import argparse  # Library for parsing command-line arguments
 import pandas as pd  # Library for handling tabular data (tables like Excel)
 from sqlalchemy import create_engine  # Library for talking to databases
 import os  # Library for system operations, like reading environment variables
@@ -9,8 +10,8 @@ SATELLITE_FIELDS = [
     "latitude_B", "longitude_B", "altitude_B",
     "postfit", "observation_vector",
     "up_combined", "up_local", "up_common", "up_global",
-    "shadow_A", "irrelevant_A", "adtrack_A",
-    "shadow_B", "irrelevant_B", "adtrack_B"
+    "shadow_A", "adtrack_A",
+    "shadow_B", "adtrack_B"
 ]
 
 def batch_generator(df: pd.DataFrame, batch_size: int = 1000) -> pd.DataFrame:
@@ -23,26 +24,28 @@ def batch_generator(df: pd.DataFrame, batch_size: int = 1000) -> pd.DataFrame:
         batch_size: How many rows per batch.
     
             Recommended Batch Size:
-            Light data, small fields (e.g., satellite floats)	1000-5000
-            Medium data, mixed types	500-2000
-            Heavy rows, big blobs, large text fields	100-500
-            Very slow internet connection to DB	100-500
+            Light data, small fields (e.g., satellite floats)    1000-5000
+            Medium data, mixed types                              500-2000
+            Heavy rows, big blobs, large text fields              100-500
+            Very slow internet connection to DB                  100-500
 
     Yields:
         A small DataFrame slice of batch_size rows.
     """
-    for start in range(0, len(df), batch_size): # range creates a sequence of starting points to iterate over
+    for start in range(0, len(df), batch_size):  # range creates a sequence of starting points to iterate over
         # Select rows from 'start' up to 'start + batch_size' (not including)
         yield df.iloc[start:start+batch_size]
 
-def populate_db(filepath: str, engine) -> None:
+def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: int = 1000) -> None:
     """
-    Loads a .pkl file and populates the 'kbr_gravimetry' table in the database
-    using batches to optimize memory and performance.
+    Loads a .pkl file and populates the 'kbr_gravimetry' table in the database.
+    Allows full load or batched inserts based on user choice.
 
     Args:
-        engine: SQLAlchemy engine for database connection.
         filepath: Path to the .pkl file containing the satellite data.
+        engine: SQLAlchemy engine for database connection.
+        use_batches: If True, insert in batches. If False, insert all at once.
+        batch_size: Number of rows per batch (only relevant if use_batches=True).
     """
     # Safety check: only allow .pkl files
     if not filepath.endswith('.pkl'):
@@ -50,19 +53,30 @@ def populate_db(filepath: str, engine) -> None:
 
     # Load the entire .pkl file as a pandas DataFrame
     df = pd.read_pickle(filepath).reset_index()
-    
+
     # Keep only the satellite fields we're interested in
     df = df[SATELLITE_FIELDS]
 
-    # Insert data in small batches to avoid memory issues and database timeouts
-    for batch in batch_generator(df, batch_size=5):
-        batch.to_sql(
+    if use_batches:
+        # Insert using batches to avoid memory issues and database timeouts
+        for batch in batch_generator(df, batch_size=batch_size):
+            batch.to_sql(
+                index=False,             # Don't save the DataFrame index as a column
+                if_exists="append",      # Append to the table instead of replacing it
+                name='kbr_gravimetry',    # Target table name in the database
+                con=engine,               # Database connection
+                method="multi",          # Insert multiple rows per statement for efficiency
+                chunksize=batch_size      # How many rows per insert statement
+            )
+    else:
+        # Insert entire DataFrame at once
+        df.to_sql(
             index=False,             # Don't save the DataFrame index as a column
             if_exists="append",      # Append to the table instead of replacing it
             name='kbr_gravimetry',    # Target table name in the database
             con=engine,               # Database connection
-            method="multi",          # Insert multiple rows per statement for efficiency
-            chunksize=5               # How many rows per insert statement
+            method="multi",          # Insert using efficient multi-insert method
+            chunksize=batch_size      # Insert in chunks even if loading fully
         )
 
 def add_test_row(filepath: str, engine) -> None:
@@ -93,3 +107,29 @@ def add_test_row(filepath: str, engine) -> None:
         method="multi",          # Insert using efficient multi-insert method
         chunksize=1               # Only one row
     )
+
+# ------------------ #
+# Command-Line Setup #
+# ------------------ #
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Populate the kbr_gravimetry table from a .pkl file.")
+    parser.add_argument("--filepath", type=str, required=True, help="Path to the .pkl data file.")
+    parser.add_argument("--use_batches", action="store_true", help="Use batch inserts (default: False).")
+    parser.add_argument("--batch_size", type=int, default=1000, help="Batch size to use when batching (default: 1000).")
+    args = parser.parse_args()
+
+    # Database connection
+    DATABASE_URL = os.getenv("DATABASE_URL")
+    if not DATABASE_URL:
+        raise EnvironmentError("DATABASE_URL not found in environment variables.")
+    engine = create_engine(DATABASE_URL)
+
+    # Run population
+    populate_db(
+        filepath=args.filepath,
+        engine=engine,
+        use_batches=args.use_batches,
+        batch_size=args.batch_size
+    )
+    print("Database population completed successfully.")

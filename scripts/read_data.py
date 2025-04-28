@@ -12,3 +12,7 @@ def read_pkl(filepath: str) -> None:
     return df
 
 data = read_pkl("data/flat-data-test.pkl")
+
+# Main should print the dataframe if the script is run directly
+if __name__ == "__main__":
+    print(data)
