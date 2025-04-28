@@ -9,7 +9,7 @@ SATELLITE_FIELDS = [
     "latitude_B", "longitude_B", "altitude_B"
 ]
 
-# Populate db using environment variable
+# Test and populate db using environment variable
 DATABASE_URL = os.getenv("DATABASE_URL")
 engine = create_engine(DATABASE_URL)
 
