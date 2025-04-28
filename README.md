@@ -87,13 +87,7 @@ Make sure the database container is running (e.g., via `podman-compose -f ./dock
 To create and populate tables, run `poetry run python` and then:
 
 ```bash
-# Import the functions from their correct locations
-from src.models import init_db
-from scripts.populate_db import populate_db
-
-# Call the functions
-init_db()
-populate_db('data/flat-data-test.pkl')
+poetry run python scripts/init_db.py 
 ```
 
 Verify the database schema inside PostgreSQL:
@@ -120,7 +114,13 @@ from scripts.populate_db import first_query
 run_firstquery()
 ```
 
-### 8 (Optional) Restart the Database with Podman Compose
+### 8 Enable the PostGIS extension
+
+```sql
+CREATE EXTENSION postgis;
+```
+
+### 9 (Optional) Restart the Database with Podman Compose
 
 If for any reason you intend to restart the database from scratch, you can do so by running the following commands:
 
@@ -131,37 +131,18 @@ podman volume rm grace-orbit-residuals-db_postgres_data
 
 > ⚠️ **Attention**: If database is populated, the data stored in the database will be permanently lost with this step. 
 
+
 ### 🧪 Running Tests (Requires Local Database)
 
 Before running the test suite, you **must ensure that the PostgreSQL + PostGIS database is running locally** and properly initialized.
 
 The tests are designed to validate the data ingestion, model behavior, and query logic against a real database backend, not mocks or in-memory databases.
 
-Follow these steps:
-
-1. **Start the database with Podman Compose (if not already running):**
-
-   ```bash
-   podman-compose -f ./docker-compose.yml up -d
-   ```
-
-2. **Initialize the database with schema and sample data:**
+After following the steps above to set up the database, you can run the tests using:
 
 ```bash
-# Import the functions from their correct locations
-from src.models import init_db
-from scripts.populate_db import populate_db
-
-# Call the functions
-init_db()
-populate_db('data/flat-data-test.pkl')
+poetry run pytest
 ```
-
-3. **Run the tests using Poetry:**
-
-   ```bash
-   poetry run pytest
-   ```
 
 > ⚠️ **Important:** Tests will fail if the database is not running or not properly initialized. Ensure the `satellite_data` table exists and is populated with test data.
 

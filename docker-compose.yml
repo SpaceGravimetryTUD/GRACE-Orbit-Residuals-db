@@ -1,6 +1,6 @@
 services:
-  db:
-    image: docker.io/postgis/postgis:15-3.3
+  postgis_container:
+    image: timescale/timescaledb-ha:pg14-oss-latest
     container_name: postgis_container
     restart: always
     environment:
@@ -11,5 +11,10 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./scripts/clean_up.sh:/docker-entrypoint-initdb.d/clean_up.sh
+    command: ["postgres"]
+    platform: linux/amd64  # 👈 force amd64
+
+
 volumes:
   postgres_data:
