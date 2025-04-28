@@ -3,7 +3,7 @@ import argparse
 import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
-from src.utils import check_polygon_validity
+from src.utils.utils import check_polygon_validity
 
 # Load environment variables
 load_dotenv()
