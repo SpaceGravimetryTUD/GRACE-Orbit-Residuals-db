@@ -24,8 +24,10 @@ Ensure the following dependencies are installed:
 - **Docker & Docker Compose** (for development; see note below on production use)
   - [Docker Engine on Ubuntu](https://docs.docker.com/compose/install/)
   - [Docker Compose standalone on Linux](https://docs.docker.com/compose/install/standalone/#on-linux)
-- **Python 3.8+**
+- **Python 3.10+**
 - **pip** package manager
+- **Poetry 2.+**
+  - [Poetry Installation](https://python-poetry.org/docs/#installation)
 
 > **Note:** We recommend installing Docker Engine & Docker Compose using the Linux/Ubuntu installation guides, if you are in a windows machine we recommend you use WSL2 (Windows Linux Subsystem).
 
@@ -55,6 +57,7 @@ docker ps
 ### 4️⃣ Install Python Dependencies
 
 ```bash
+poetry env activate
 poetry install
 ```
 
