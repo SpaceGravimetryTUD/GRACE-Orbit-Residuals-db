@@ -1,6 +1,8 @@
 # GRACE Geospatial Data Processing Stack
 
-This project sets up a scalable geospatial data processing pipeline using **PostgreSQL + PostGIS**, **SQLAlchemy**, and **Podman Compose**. It facilitates efficient ingestion, validation, and querying of high-frequency satellite data from the GRACE mission. 
+This project sets up a scalable geospatial data pipeline using **PostgreSQL + PostGIS + TimescaleDB** , **SQLAlchemy**, and **Podman Compose**. It facilitates efficient ingestion, validation, and querying of high-frequency satellite data from the GRACE mission.
+
+---
 
 ## 🌍 Context & Background
 
@@ -8,82 +10,74 @@ We work with high-frequency geospatial time-series data from the GRACE satellite
 
 ### Key dataset characteristics:
 
-- Temporal resolution: 5-second intervals
-- Geospatial attributes: Latitude, longitude, altitude for two satellites (GRACE A & B)
-- Data volume: 2002–2017, \~6.3 million records per year (\~95 million total)
-- Queries of interest: Filtering by time span, spatial regions, and signal characteristics (statistical analysis)
+- **Temporal resolution**: 5-second intervals
+- **Spatial attributes**: Latitude, longitude, altitude for GRACE A & B
+- **Data volume**: 2002–2017, approx. \~95 million records
+- **Target queries**: Time-span filtering, spatial bounding, and signal-based statistical analysis
+
+---
 
 ## 🚀 Quick Start
 
 ### 1️⃣ Prerequisites
 
-This project is designed to run in a Unix environment. If you are using a Windows machine, we recommend installing the [Windows Subsystem for Linux (WSL2)](https://learn.microsoft.com/en-us/windows/wsl/install) and following the steps recommended for Linux/Ubuntu.
+This project targets Unix-based systems. If you're on Windows, install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) and proceed as if on Ubuntu.
 
-Ensure the following dependencies are installed:
+Install the following tools:
 
-- **Docker & Docker Compose** (for development; see note below on production use)
-  - [Docker Engine on Ubuntu](https://docs.docker.com/compose/install/)
-  - [Docker Compose standalone on Linux](https://docs.docker.com/compose/install/standalone/#on-linux)
+- **Podman & Podman Compose**
+  - [Podman Install](https://podman.io/getting-started/installation)
+  - [Podman Compose Install](https://github.com/containers/podman-compose)
 - **Python 3.10+**
-- **pip** package manager
-- **Poetry 2.+**
-  - [Poetry Installation](https://python-poetry.org/docs/#installation)
+- **pip**
+- **[Poetry 2.x](https://python-poetry.org/docs/#installation)**
 
- > **Note**: We recommend using **Podman** instead of **Docker** for production environments, as it is compatible with Docker commands and provides better security and rootless containerization.
+> 🔐 **Security Note**: Podman is recommended over Docker for production due to rootless container support.
+
+> 📅 **Docker Compatibility**: You can also use Docker for development or local testing if it's already installed on your system. Podman supports Docker CLI syntax, so most `docker` and `docker-compose` commands are interchangeable with `podman` and `podman-compose`.
+
+---
 
 ### 2️⃣ Clone the Repository
 
 ```bash
-git clone https://github.com/SpaceGravimetryTUD/GRACE-Orbit-Residuals-db/tree/main
+git clone https://github.com/SpaceGravimetryTUD/GRACE-Orbit-Residuals-db
 cd GRACE-Orbit-Residuals-db
 ```
 
-### 3️⃣ Install Python Dependencies and activate virtual environment
+---
+
+### 3️⃣ Start the Database
 
 ```bash
-poetry install
-. .venv/bin/activate
+podman-compose -f docker-compose.yml up -d
 ```
 
-### 4️⃣ Start the Database with Podman Compose
-
-```bash
-podman-compose -f ./docker-compose.yml up -d
-```
-
-This launches a PostgreSQL database with PostGIS support.
-
-Verify the container is running:
+Verify it's running:
 
 ```bash
 podman ps
 ```
 
+---
+
 ### 4️⃣ Install Python Dependencies
 
 ```bash
-poetry env activate
 poetry install
 ```
 
-### 5️⃣ Set file location for data to be uploaded into the database
+From now on, run all Python commands via:
 
-For demonstration purposes we are going to use the following file:
+```bash
+poetry run <your-command>
+```
 
-'''bash
-data/flat-data-test.pkl
-''' 
+---
 
-### 6️⃣ ⚙️ Environment Configuration
+### 5️⃣ Environment Configuration
 
-To run the project locally — including the tests — you need to create a `.env` file in the project root directory. This file should define the necessary environment variables for database access and test data.
-
-#### Required variables:
-
-- `DATABASE_URL`: the full SQLAlchemy connection string to the PostGIS-enabled PostgreSQL instance
-- `TEST_DATA_PATH`: path to the `.pkl` file used for inserting sample satellite data during testing
-
-#### 📄 Example `.env` file
+Create a `.env` file at the project root:
 
 ```ini
 # .env
@@ -91,80 +85,110 @@ DATABASE_URL=postgresql://user:password@localhost:5432/geospatial_db
 TEST_DATA_PATH=data/flat-data-test.pkl
 ```
 
-Make sure the database container is running (e.g., via `podman-compose -f ./docker-compose.yml up -d`) before running any scripts or tests.
+Ensure the database is running (`podman-compose up -d`) before using scripts.
 
-### 7 Initialize the Database
+---
 
-To create and populate tables, run `poetry run python` and then:
+### 6️⃣ Initialize the Database Schema
+
+This will create the tables and prepare the schema:
 
 ```bash
-poetry run python scripts/init_db.py 
+poetry run python scripts/init_db.py
 ```
 
-Verify the database schema inside PostgreSQL:
+(Optional) Verify schema from inside the container:
 
 ```bash
 podman exec -it postgis_container psql -U user -d geospatial_db -c "\d satellite_data;"
 ```
 
-To display data uploaded into the table satellite_data:
+---
+
+### 7️⃣ Insert & Query Example Data
+
+Ensure `data/flat-data-test.pkl` exists:
 
 ```bash
-podman exec -it postgis_container psql -U user -d geospatial_db -c "TABLE satellite_data"
+ls data/flat-data-test.pkl
 ```
 
-### 7 First query
-
-To try your first query, run `poetry run python` and then:
+Run a sample query:
 
 ```bash
-# Import the functions from their correct locations
-from scripts.populate_db import first_query
+poetry run python
+```
 
-# Call the function
+Then in Python:
+
+```python
+from scripts.populate_db import run_firstquery
 run_firstquery()
 ```
 
-### 8 Enable the PostGIS extension
+---
+
+### 8️⃣ (Optional) Enable PostGIS Extension
+
+If needed, you can manually enable PostGIS (only once):
 
 ```sql
 CREATE EXTENSION postgis;
 ```
 
-### 9 (Optional) Restart the Database with Podman Compose
+---
 
-If for any reason you intend to restart the database from scratch, you can do so by running the following commands:
+### 9️⃣ Restart or Clean the Database (Optional)
+
+To completely reset:
 
 ```bash
 podman-compose down
 podman volume rm grace-orbit-residuals-db_postgres_data
 ```
 
-> ⚠️ **Attention**: If database is populated, the data stored in the database will be permanently lost with this step. 
+> ⚠️ Warning: This will **permanently delete all data** inside the database.
 
+---
 
-### 🧪 Running Tests (Requires Local Database)
+## 📊 Running Tests
 
-Before running the test suite, you **must ensure that the PostgreSQL + PostGIS database is running locally** and properly initialized.
-
-The tests are designed to validate the data ingestion, model behavior, and query logic against a real database backend, not mocks or in-memory databases.
-
-After following the steps above to set up the database, you can run the tests using:
+Tests rely on a running local database and valid `.env` configuration.
 
 ```bash
 poetry run pytest
 ```
 
-> ⚠️ **Important:** Tests will fail if the database is not running or not properly initialized. Ensure the `satellite_data` table exists and is populated with test data.
+> ✅ Ensure:
+> - `geospatial_db` is running.
+> - `satellite_data` table exists.
+> - Sample data is loaded.
 
+---
+
+## 📁 Project Structure (simplified overview)
+
+```text
+.
+├── scripts/          # Scripts to init DB, ingest data, and run spatial/temporal queries
+├── src/              # Source code including SQLAlchemy models and utility functions
+├── tests/            # Unit tests for ingestion, queries, and extension validation
+├── docker-compose.yml
+├── pyproject.toml    # Poetry project config
+├── .env              # Local environment variables (not committed)
+├── postgresql.conf   # Custom DB configuration (optional)
+├── LICENSE
+└── README.md
+```
+
+---
 
 ## 📜 Licensing & Waiver
 
-Licensed under MIT, subject to the following waiver:
+Licensed under the MIT License.
 
-**Technische Universiteit Delft** hereby disclaims all copyright interest in the program "GRACE Geospatial Data Processing Stack" written by the Author(s).
+**Technische Universiteit Delft** hereby disclaims all copyright 
+interest in the program "GRACE Geospatial Data Processing Stack" written by the Author(s).
 
-***Prof. H.G.C. (Henri) Werij***, Dean of Aerospace Engineering at TU Delft**
-
-Copyright (c) 2025 .
+— ***Prof. H.G.C. (Henri) Werij***, Dean of Aerospace Engineering at TU Delft
 
