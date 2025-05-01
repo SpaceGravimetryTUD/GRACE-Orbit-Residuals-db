@@ -76,13 +76,21 @@ poetry run <your-command>
 ---
 
 ### 5️⃣ Environment Configuration
+Make sure to have a data directory where you store your data.
+
+> ⚠️ Security Note on Pickle Files
+> Warning: This application loads data using pandas.read_pickle(), which internally uses Python's pickle module.
+
+While this format is convenient for fast internal data loading, it is not secure against untrusted input.Never upload or load .pkl files from unverified or external sources, as they can execute arbitrary code on your system.
+
+
 
 Create a `.env` file at the project root:
 
 ```ini
 # .env
 DATABASE_URL=postgresql://user:password@localhost:5432/geospatial_db
-TEST_DATA_PATH=data/flat-data-test.pkl
+DATA_PATH=data/flat-data-test.pkl
 ```
 
 Ensure the database is running (`podman-compose up -d`) before using scripts.

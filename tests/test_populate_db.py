@@ -24,8 +24,8 @@ def clear_test_row(engine):
 
 
 def test_add_test_row(engine, clear_test_row):
-    test_file = os.getenv("TEST_DATA_PATH")  # e.g., data/flat-data-test.pkl
-    assert test_file and os.path.exists(test_file), "Missing or invalid TEST_DATA_PATH"
+    test_file = os.getenv("DATA_PATH")  # e.g., data/flat-data-test.pkl
+    assert test_file and os.path.exists(test_file), "Missing or invalid DATA_PATH"
 
     # Insert one row
     add_test_row(test_file, engine)
