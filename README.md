@@ -21,9 +21,12 @@ This project is designed to run in a Unix environment. If you are using a Window
 
 Ensure the following dependencies are installed:
 
-- **Docker & Docker Compose** (for development; see note below on production use)
-  - [Docker Engine on Ubuntu](https://docs.docker.com/compose/install/)
-  - [Docker Compose standalone on Linux](https://docs.docker.com/compose/install/standalone/#on-linux)
+- **Podman** 
+```bash
+sudo apt update
+sudo apt -y install podman
+podman machine init
+```
 - **Python 3.10+**
 - **pip** package manager
 - **Poetry 2.+**
