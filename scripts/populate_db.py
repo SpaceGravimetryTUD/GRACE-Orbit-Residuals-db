@@ -14,28 +14,6 @@ SATELLITE_FIELDS = [
     "shadow_B", "adtrack_B"
 ]
 
-def batch_generator(df: pd.DataFrame, batch_size: int = 1000) -> pd.DataFrame:
-    """
-    Generator that yields small batches of the DataFrame.
-    Instead of processing the whole DataFrame at once, we split it into parts.
-
-    Args:
-        df: The pandas DataFrame loaded in memory.
-        batch_size: How many rows per batch.
-    
-            Recommended Batch Size:
-            Light data, small fields (e.g., satellite floats)    1000-5000
-            Medium data, mixed types                              500-2000
-            Heavy rows, big blobs, large text fields              100-500
-            Very slow internet connection to DB                  100-500
-
-    Yields:
-        A small DataFrame slice of batch_size rows.
-    """
-    for start in range(0, len(df), batch_size):  # range creates a sequence of starting points to iterate over
-        # Select rows from 'start' up to 'start + batch_size' (not including)
-        yield df.iloc[start:start+batch_size]
-
 def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: int = 1000) -> None:
     """
     Loads a .pkl file and populates the 'kbr_gravimetry' table in the database.
@@ -52,32 +30,20 @@ def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: in
         raise ValueError("File type not recognized. Please select a .pkl file")
 
     # Load the entire .pkl file as a pandas DataFrame
-    df = pd.read_pickle(filepath).reset_index()
+    df = pd.read_pickle(filepath).reset_index() # nosec
 
     # Keep only the satellite fields we're interested in
     df = df[SATELLITE_FIELDS]
 
-    if use_batches:
-        # Insert using batches to avoid memory issues and database timeouts
-        for batch in batch_generator(df, batch_size=batch_size):
-            batch.to_sql(
-                index=False,             # Don't save the DataFrame index as a column
-                if_exists="append",      # Append to the table instead of replacing it
-                name='kbr_gravimetry',    # Target table name in the database
-                con=engine,               # Database connection
-                method="multi",          # Insert multiple rows per statement for efficiency
-                chunksize=batch_size      # How many rows per insert statement
-            )
-    else:
-        # Insert entire DataFrame at once
-        df.to_sql(
-            index=False,             # Don't save the DataFrame index as a column
-            if_exists="append",      # Append to the table instead of replacing it
-            name='kbr_gravimetry',    # Target table name in the database
-            con=engine,               # Database connection
-            method="multi",          # Insert using efficient multi-insert method
-            chunksize=batch_size      # Insert in chunks even if loading fully
-        )
+    # Use pandas built-in batching via chunksize if batching is enabled
+    df.to_sql(
+        index=False,             # Don't save the DataFrame index as a column
+        if_exists="append",      # Append to the table instead of replacing it
+        name='kbr_gravimetry',    # Target table name in the database
+        con=engine,               # Database connection
+        method="multi",          # Insert using efficient multi-insert method
+        chunksize=batch_size if use_batches else None  # Control batching
+    )
 
 def add_test_row(filepath: str, engine) -> None:
     """
