@@ -21,9 +21,13 @@ This project is designed to run in a Unix environment. If you are using a Window
 
 Ensure the following dependencies are installed:
 
- - **Podman** via `sudo apt -y install podman`
- - **Python 3.8+**
- - **Poetry** for dependency management and packaging in Python. Check installation instuctions [here](https://python-poetry.org/docs/#installation)
+- **Docker & Docker Compose** (for development; see note below on production use)
+  - [Docker Engine on Ubuntu](https://docs.docker.com/compose/install/)
+  - [Docker Compose standalone on Linux](https://docs.docker.com/compose/install/standalone/#on-linux)
+- **Python 3.10+**
+- **pip** package manager
+- **Poetry 2.+**
+  - [Poetry Installation](https://python-poetry.org/docs/#installation)
 
  > **Note**: We recommend using **Podman** instead of **Docker** for production environments, as it is compatible with Docker commands and provides better security and rootless containerization.
 
