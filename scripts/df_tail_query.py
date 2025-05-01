@@ -1,34 +1,27 @@
-from sqlalchemy import select, create_engine, and_
+from sqlalchemy import create_engine, text
 import os
-from src.models import KBRGravimetry
-from scripts.populate_db import SATELLITE_FIELDS
-from sqlalchemy.orm import Session
+import pandas as pd
+from dotenv import load_dotenv
 
-# Query db using environment variable
+# Load environment variables
+load_dotenv()
+
+# Setup the database connection
 DATABASE_URL = os.getenv("DATABASE_URL")
+if DATABASE_URL is None:
+    raise ValueError("DATABASE_URL not found in environment variables.")
 engine = create_engine(DATABASE_URL)
 
+def query_get_df_tail(N) -> None:
+    """Query the kbr_gravimetry table for the last N records."""
+    query = text("""
+        SELECT *
+        FROM kbr_gravimetry
+        ORDER BY id DESC
+        FETCH FIRST :N ROWS ONLY;
+    """)
 
+    with engine.connect() as conn:
+        df = pd.read_sql_query(query, conn, params={"N": N})
 
-def run_firstquery() -> None:
-
-    with Session(engine) as session:
-        results = session.query(KBRGravimetry).order_by(KBRGravimetry.id.desc()).limit(10).all()
-
-        print('\t'.join(SATELLITE_FIELDS))
-        for row in results:
-            print('\t'.join([str(row.timestamp),
-                             str(row.latitude_A),
-                             str(row.longitude_A),
-                             str(row.altitude_A),
-                             str(row.latitude_B),
-                             str(row.longitude_B),
-                             str(row.altitude_B)]))
-                             
-        '''print(row.timestamp)
-            print(row.latitude_A)
-            print(row.longitude_A)
-            print(row.altitude_A)
-            print(row.latitude_B)
-            print(row.longitude_B)
-            print(row.altitude_B)'''
+    return df
