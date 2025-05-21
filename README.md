@@ -169,7 +169,7 @@ poetry run pytest
 
 > ✅ Ensure:
 > - `geospatial_db` is running.
-> - `satellite_data` table exists.
+> - `kbr_gravimetry` table exists.
 > - Sample data is loaded.
 
 ---
