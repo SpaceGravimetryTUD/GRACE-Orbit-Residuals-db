@@ -102,13 +102,13 @@ Ensure the database is running (`podman-compose up -d`) before using scripts.
 This will create the tables and prepare the schema:
 
 ```bash
-poetry run python scripts/init_db.py
+poetry run python scripts/init_db.py --use_batches
 ```
 
 (Optional) Verify schema from inside the container:
 
 ```bash
-podman exec -it postgis_container psql -U user -d geospatial_db -c "\d satellite_data;"
+podman exec -it postgis_container psql -U user -d geospatial_db -c "\d kbr_gravimetry;"
 ```
 
 ---
@@ -130,7 +130,7 @@ poetry run python
 Then in Python:
 
 ```python
-from scripts.populate_db import run_firstquery
+from scripts.first_query import run_firstquery
 run_firstquery()
 ```
 
