@@ -47,6 +47,21 @@ cd GRACE-Orbit-Residuals-db
 
 ---
 
+### Step 5 comes here
+
+---
+
+### Update /etc/containers/registries.conf
+
+---
+
+### update sub[gu]id
+
+echo "$USER:100000:65536" >> /etc/subuid
+echo "$USER:100000:65536" >> /etc/subgid
+
+---
+
 ### 3️⃣ Start the Database
 
 ```bash
@@ -67,11 +82,29 @@ podman ps
 poetry install
 ```
 
+If you get the error:
+
+```
+ Installing psycopg2 (2.9.10): Failed
+
+PEP517 build of a dependency failed
+
+Backend subprocess exited when trying to invoke get_requires_for_build_wheel
+```
+
+Then:
+
+```
+ sudo apt install libpq-dev gcc
+```
+
 From now on, run all Python commands via:
 
 ```bash
 poetry run <your-command>
 ```
+
+ISSUE: Poetry doesn't like pyenv: removing it from PATH works
 
 ---
 
@@ -102,8 +135,17 @@ Ensure the database is running (`podman-compose up -d`) before using scripts.
 This will create the tables and prepare the schema:
 
 ```bash
-poetry run python scripts/init_db.py --use_batches
+poetry run python scripts/init_db.py --use_batches --filepath <path to flat data file>
 ```
+
+If you get the error:
+
+```
+Failed to initialize database: No module named 'src'
+````
+
+Then:
+
 
 (Optional) Verify schema from inside the container:
 
@@ -138,7 +180,7 @@ run_firstquery()
 
 ### 8️⃣ (Optional) Enable PostGIS Extension
 
-If needed, you can manually enable PostGIS (only once):
+Manually enable PostGIS (only once):
 
 ```sql
 CREATE EXTENSION postgis;
@@ -148,7 +190,7 @@ CREATE EXTENSION postgis;
 
 ### 9️⃣ Restart or Clean the Database (Optional)
 
-To completely reset:
+To completely uninstall:
 
 ```bash
 podman-compose down
