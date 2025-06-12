@@ -4,6 +4,7 @@ import pandas as pd
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from src.utils.utils import check_polygon_validity
+import xarray as xr 
 
 # Load environment variables
 load_dotenv()
@@ -76,11 +77,21 @@ def query_satellite_data_within_polygon(start_time, end_time, polygon_coordinate
 
     return df
 
+def save_data(df, output_format, filename_prefix):
+    if output_format == 'csv':
+        df.to_csv(f"{filename_prefix}.csv", index=False)
+    elif output_format == 'netcdf':
+        ds = df.set_index('datetime').to_xarray()
+        ds.to_netcdf(f"{filename_prefix}.nc")
+    else:
+        raise ValueError(f"Unsupported output format: {output_format}")
+
 def main():
     parser = argparse.ArgumentParser(description="Query KBR Gravimetry Data within polygon and time bounds.")
     parser.add_argument("--start_time", type=str, help="Start time (e.g. '2017-01-01T00:00:00')")
     parser.add_argument("--end_time", type=str, help="End time (e.g. '2017-02-01T00:00:00')")
     parser.add_argument("--polygon", type=str, help="Polygon coordinates as 'lon1 lat1,lon2 lat2,...,lonN latN'")
+    parser.add_argument("--output_format", type=str, choices=['csv', 'netcdf'], help="Output format (csv or netcdf)")
     args = parser.parse_args()
 
     if args.start_time and args.end_time and args.polygon:
@@ -102,14 +113,20 @@ def main():
     print("\n--- Time Filter Only ---")
     df_time = query_satellite_data_by_time(start_time, end_time)
     print(df_time)
+    if args.output_format and not df_time.empty:
+        save_data(df_time, args.output_format, "time_filter_output")
 
     print("\n--- Space Filter Only (Polygon) ---")
     df_space = query_satellite_data_by_polygon(polygon_coordinates)
     print(df_space)
+    if args.output_format and not df_space.empty:
+        save_data(df_space, args.output_format, "space_filter_output")
 
     print("\n--- Time + Space Filter (Combined) ---")
     df_both = query_satellite_data_within_polygon(start_time, end_time, polygon_coordinates)
     print(df_both)
+    if args.output_format and not df_both.empty:
+        save_data(df_both, args.output_format, "combined_filter_output")
 
 if __name__ == "__main__":
     main()
