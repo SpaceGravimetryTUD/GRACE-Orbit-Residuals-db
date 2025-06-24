@@ -124,6 +124,7 @@ Create a `.env` file at the project root:
 # .env
 DATABASE_URL=postgresql://user:password@localhost:5432/geospatial_db
 DATA_PATH=data/flat-data-test.pkl
+EXTERNAL_PORT=XXXX #Replace with XXXX with available external port
 ```
 
 Ensure the database is running (`podman-compose up -d`) before using scripts.
