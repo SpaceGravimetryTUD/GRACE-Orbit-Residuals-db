@@ -51,14 +51,22 @@ cd GRACE-Orbit-Residuals-db
 
 ---
 
-### Update /etc/containers/registries.conf
+### Update `/etc/containers/registries.conf`
+
+If error is triggered when running timescaledb image, add the following line to `/etc/containers/registries.conf`:
+
+```
+   unqualified-search-registries=["docker.io"]
+```
 
 ---
 
 ### update sub[gu]id
 
+```bash
 echo "$USER:100000:65536" >> /etc/subuid
 echo "$USER:100000:65536" >> /etc/subgid
+```
 
 ---
 
