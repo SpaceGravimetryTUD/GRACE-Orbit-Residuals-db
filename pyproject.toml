@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "A scalable pipeline for processing and querying geospatial satellite data using PostgreSQL + PostGIS"
 authors = ["Your Name <your.email@example.com>"]
 license = "MIT"
- 
+
 [tool.poetry.dependencies]
 python = "^3.10"
 sqlalchemy = "^2.0.25"
