@@ -258,8 +258,9 @@ run_firstquery()
 
 Manually enable PostGIS (only once):
 
-```sql
-CREATE EXTENSION postgis;
+```bash
+podman exec -it postgis_container psql -U user -d geospatial_db -c "CREATE EXTENSION postgis;"
+```
 ```
 
 ---
