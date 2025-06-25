@@ -51,14 +51,22 @@ cd GRACE-Orbit-Residuals-db
 
 ---
 
-### Update /etc/containers/registries.conf
+### Update `/etc/containers/registries.conf`
+
+If error is triggered when running timescaledb image, add the following line to `/etc/containers/registries.conf`:
+
+```
+   unqualified-search-registries=["docker.io"]
+```
 
 ---
 
 ### update sub[gu]id
 
+```bash
 echo "$USER:100000:65536" >> /etc/subuid
 echo "$USER:100000:65536" >> /etc/subgid
+```
 
 ---
 
@@ -124,6 +132,7 @@ Create a `.env` file at the project root:
 # .env
 DATABASE_URL=postgresql://user:password@localhost:5432/geospatial_db
 DATA_PATH=data/flat-data-test.pkl
+EXTERNAL_PORT=XXXX #Replace with XXXX with available external port
 ```
 
 Ensure the database is running (`podman-compose up -d`) before using scripts.
