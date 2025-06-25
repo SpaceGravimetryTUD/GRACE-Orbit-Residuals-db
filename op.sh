@@ -51,6 +51,9 @@ do
   run-tests) #operation: run the tests
     poetry run pytest
   ;;
+  list-ports) #operation: list open ports and associated processes
+    sudo ss -ltnp
+  ;;
   *)
     echo-red "WARNING: ignored argument '$OP'"
   ;;
