@@ -136,7 +136,7 @@ Create a `.env` file at the project root:
 # .env
 DATABASE_URL=postgresql://user:password@localhost:5432/geospatial_db
 DATA_PATH=/mnt/GRACEcube/Data/L1B_res/CSR_latlon_data/flat-data/v1/flat-data-20XX.v1.pkl
-EXTERNAL_PORT=XXXX #Replace with XXXX with available external port
+EXTERNAL_PORT=XXXX #Replace with XXXX with available external port; in grace-cube.lr.tudelft.nl, port 3306 is open
 ```
 
 ---
