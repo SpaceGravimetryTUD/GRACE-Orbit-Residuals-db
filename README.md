@@ -285,7 +285,7 @@ podman volume rm grace-orbit-residuals-db_postgres_data
 
 # 📊 Running Tests
 
-Tests rely on a running local database and valid `.env` configuration.
+Tests rely on a running local database and valid `.env` configuration. The PostGIS Extension should also be enabled (to get no failed tests).
 
 ```bash
 poetry run pytest
