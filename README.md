@@ -261,6 +261,11 @@ Manually enable PostGIS (only once):
 ```bash
 podman exec -it postgis_container psql -U user -d geospatial_db -c "CREATE EXTENSION postgis;"
 ```
+
+Test a simple query:
+
+```bash
+poetry run python scripts/space_time_query.py
 ```
 
 ---
