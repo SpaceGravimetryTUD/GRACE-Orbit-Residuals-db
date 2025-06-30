@@ -39,11 +39,11 @@ do
     podman ps
   ;;
   run) #operation: run all following arguments and exit
-    poetry run ${2:}
+    poetry run ${@:2}
     exit
   ;;
   load) #operation: load the files given by the following arguments and exit
-    for i in "${2:}"
+    for i in "${@:2}"
     do
       poetry run python scripts/init_db.py --use_batches --filepath "$i"
     done
