@@ -9,7 +9,7 @@ from src.models import Base, KBRGravimetry, create_engine, SessionLocal, init_db
 # Load .env file
 load_dotenv()
 
-def test_kbr_gravimetry_table_exists(engine):
+def test_table_exists(engine):
     inspector = inspect(engine)
     tables = inspector.get_table_names()
-    assert 'kbr_gravimetry' in tables
+    assert os.getenv('TABLE_NAME') in tables

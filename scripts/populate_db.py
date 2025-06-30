@@ -2,6 +2,7 @@ import argparse  # Library for parsing command-line arguments
 import pandas as pd  # Library for handling tabular data (tables like Excel)
 from sqlalchemy import create_engine  # Library for talking to databases
 import os  # Library for system operations, like reading environment variables
+from dotenv import load_dotenv
 
 # List of fields (columns) we want to keep from the satellite data
 SATELLITE_FIELDS = [
@@ -16,7 +17,7 @@ SATELLITE_FIELDS = [
 
 def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: int = 1000) -> None:
     """
-    Loads a .pkl file and populates the 'kbr_gravimetry' table in the database.
+    Loads a .pkl file and populates the TABLE_NAME table in the database.
     Allows full load or batched inserts based on user choice.
 
     Args:
@@ -39,15 +40,15 @@ def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: in
     df.to_sql(
         index=False,             # Don't save the DataFrame index as a column
         if_exists="append",      # Append to the table instead of replacing it
-        name='kbr_gravimetry',    # Target table name in the database
-        con=engine,               # Database connection
+        name=os.getenv("TABLE_NAME"), # Target table name in the database
+        con=engine,                # Database connection
         method="multi",          # Insert using efficient multi-insert method
         chunksize=batch_size if use_batches else None  # Control batching
     )
 
 def add_test_row(filepath: str, engine) -> None:
     """
-    Loads a .pkl file and inserts only one row into the 'kbr_gravimetry' table.
+    Loads a .pkl file and inserts only one row into the TABLE_NAME table.
     Useful for testing purposes.
 
     Args:
@@ -68,7 +69,7 @@ def add_test_row(filepath: str, engine) -> None:
     df.to_sql(
         index=False,             # Don't save the DataFrame index as a column
         if_exists="append",      # Append to the table instead of replacing it
-        name='kbr_gravimetry',    # Target table name
+        name=os.getenv("TABLE_NAME"),# Target table name
         con=engine,               # Database connection
         method="multi",          # Insert using efficient multi-insert method
         chunksize=1               # Only one row
@@ -79,7 +80,7 @@ def add_test_row(filepath: str, engine) -> None:
 # ------------------ #
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Populate the kbr_gravimetry table from a .pkl file.")
+    parser = argparse.ArgumentParser(description="Populate the KBR Gravimety Data table from a .pkl file.")
     parser.add_argument("--filepath", type=str, required=True, help="Path to the .pkl data file.")
     parser.add_argument("--use_batches", action="store_true", help="Use batch inserts (default: False).")
     parser.add_argument("--batch_size", type=int, default=1000, help="Batch size to use when batching (default: 1000).")

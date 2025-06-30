@@ -134,9 +134,10 @@ Create a `.env` file at the project root:
 
 ```ini
 # .env
-DATABASE_URL=postgresql://user:password@localhost:5432/geospatial_db
-DATA_PATH=/mnt/GRACEcube/Data/L1B_res/CSR_latlon_data/flat-data/v1/flat-data-20XX.v1.pkl
+TABLE_NAME=kbr_gravimetry_v2
 EXTERNAL_PORT=XXXX #Replace with XXXX with available external port; in grace-cube.lr.tudelft.nl, port 3306 is open
+DATABASE_NAME=geospatial_db
+DATABASE_URL=postgresql://user:password@localhost:5432/$DATABASE_NAME
 ```
 
 ---
@@ -226,8 +227,10 @@ poetry run python scripts/init_db.py --use_batches --filepath <path to flat data
 ## Optional: verify schema from inside the container:
 
 ```bash
-podman exec -it postgis_container psql -U user -d geospatial_db -c "\d kbr_gravimetry;"
+podman exec -it postgis_container psql -U user -d $DATABASE_NAME -c "\d $TABLE_NAME;"
 ```
+
+The variables `$DATABASE_NAME` and `$TABLE_NAME` are defined in `.env`.
 
 ---
 
@@ -259,7 +262,7 @@ run_firstquery()
 Manually enable PostGIS (only once):
 
 ```bash
-podman exec -it postgis_container psql -U user -d geospatial_db -c "CREATE EXTENSION postgis;"
+podman exec -it postgis_container psql -U user -d $DATABASE_NAME -c "CREATE EXTENSION postgis;"
 ```
 
 Test a simple query:
@@ -293,8 +296,8 @@ poetry run pytest
 
 > ✅ Ensure:
 >
-> - `geospatial_db` is running.
-> - `kbr_gravimetry` table exists.
+> - `$DATABASE_NAME` is running (defined in `.env`).
+> - `$TABLE_NAME table exists (defined in `.env`).
 > - Sample data is loaded.
 
 ---

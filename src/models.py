@@ -12,7 +12,7 @@ load_dotenv()
 Base = declarative_base()
 
 class KBRGravimetry(Base):
-    __tablename__ = 'kbr_gravimetry'
+    __tablename__ = os.getenv("TABLE_NAME")
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     timestamp = Column(Float, nullable=False, index=True)  # seconds since 2000-01-01

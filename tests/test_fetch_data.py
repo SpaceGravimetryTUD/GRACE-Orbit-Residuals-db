@@ -6,7 +6,7 @@ def test_fetch_first_satellite_row(engine):
     session = SessionLocal()
     try:
         first_row = session.query(KBRGravimetry).first()
-        assert first_row is not None, "No data found in kbr_gravimetry table!"
+        assert first_row is not None, f"No data found in {os.getenv('TABLE_NAME')} table!"
         print(
             f"First row fetched: "
             f"timestamp={first_row.timestamp}, "
@@ -35,8 +35,8 @@ def test_timescaledb_extension(engine):
     try:
         # Fetch the first datetime from your data
         first_row = session.query(KBRGravimetry.datetime).first()
-        assert first_row is not None, "No datetime data found in kbr_gravimetry table!"
-        
+        assert first_row is not None, f"No datetime data found in {os.getenv('TABLE_NAME')} table!"
+
         real_datetime = first_row.datetime  # Now it's already a proper datetime
 
         # Use TimescaleDB time_bucket function

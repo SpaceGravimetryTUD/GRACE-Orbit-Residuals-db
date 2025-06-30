@@ -5,7 +5,7 @@ services:
     container_name: postgis_container
     restart: always
     environment:
-      POSTGRES_DB: geospatial_db
+      POSTGRES_DB: geospatial_db #must be in agreement with the value of the variable DATABASE_NAME defined in .env
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     ports:

@@ -15,10 +15,10 @@ if DATABASE_URL is None:
 engine = create_engine(DATABASE_URL)
 
 def query_satellite_data_by_time(start_time, end_time):
-    """Query the kbr_gravimetry table for records within a time window."""
-    query = text("""
+    """Query the TABLE_NAME table for records within a time window."""
+    query = text(f"""
         SELECT id, datetime, "latitude_A", "longitude_A", postfit, up_combined
-        FROM kbr_gravimetry
+        FROM {os.getenv("TABLE_NAME")}
         WHERE datetime BETWEEN :start_time AND :end_time
         ORDER BY datetime ASC
     """)
@@ -29,17 +29,17 @@ def query_satellite_data_by_time(start_time, end_time):
     return df
 
 def query_satellite_data_by_polygon(polygon_coordinates):
-    """Query the kbr_gravimetry table for records within a spatial polygon."""
+    """Query the TABLE_NAME table for records within a spatial polygon."""
     # Check if the polygon is valid
     if not check_polygon_validity(polygon_coordinates):
         raise ValueError("Invalid polygon coordinates provided.")
-    
+
     # Convert the polygon coordinates to WKT format
     polygon_wkt = f"POLYGON(({', '.join([f'{lon} {lat}' for lon, lat in polygon_coordinates])}))"
 
-    query = text("""
+    query = text(f"""
         SELECT id, datetime, "latitude_A", "longitude_A", postfit, up_combined
-        FROM kbr_gravimetry
+        FROM {os.getenv("TABLE_NAME")}
         WHERE ST_Contains(
             ST_GeomFromText(:polygon, 4326),
             ST_SetSRID(ST_MakePoint("longitude_A", "latitude_A"), 4326)
@@ -53,16 +53,16 @@ def query_satellite_data_by_polygon(polygon_coordinates):
     return df
 
 def query_satellite_data_within_polygon(start_time, end_time, polygon_coordinates):
-    """Query the kbr_gravimetry table for records inside a polygon and time window."""
+    """Query the TABLE_NAME table for records inside a polygon and time window."""
     # Check if the polygon is valid
     if not check_polygon_validity(polygon_coordinates):
         raise ValueError("Invalid polygon coordinates provided.")
-    
+
     polygon_wkt = f"POLYGON(({', '.join([f'{lon} {lat}' for lon, lat in polygon_coordinates])}))"
 
-    query = text("""
+    query = text(f"""
         SELECT id, datetime, "latitude_A", "longitude_A", postfit, up_combined
-        FROM kbr_gravimetry
+        FROM {os.getenv("TABLE_NAME")}
         WHERE datetime BETWEEN :start_time AND :end_time
         AND ST_Contains(
             ST_GeomFromText(:polygon, 4326),

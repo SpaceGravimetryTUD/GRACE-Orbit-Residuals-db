@@ -19,7 +19,7 @@ def clear_test_row(engine):
     test_timestamp = 1017619200.0  # for example: corresponds to 2002-04-01 in epoch seconds
     yield
     with engine.connect() as conn:
-        conn.execute(text("DELETE FROM kbr_gravimetry WHERE timestamp = :ts"), {"ts": test_timestamp})
+        conn.execute(text(f"DELETE FROM {os.getenv('TABLE_NAME')} WHERE timestamp = :ts"), {"ts": test_timestamp})
         conn.commit()
 
 
@@ -32,6 +32,5 @@ def test_add_test_row(engine, clear_test_row):
 
     # Check it exists
     with engine.connect() as conn:
-        result = conn.execute(text("SELECT COUNT(*) FROM kbr_gravimetry")).scalar()
+        result = conn.execute(text(f"SELECT COUNT(*) FROM {os.getenv('TABLE_NAME')}")).scalar()
         assert result >= 1
-        

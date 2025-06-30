@@ -4,6 +4,16 @@ function echo-red(){
   echo $'\e[91m'"$@"$'\e[0m'
 }
 
+DIR=$(cd $(dirname $BASH_SOURCE);pwd)
+
+if [ ! -s $DIR/.env ]
+then
+  echo-red "ERROR: cannot find $DIR/.env file"
+  exit 3
+fi
+
+source $DIR/.env
+
 while [[ $# -gt 0 ]]
 do
   OP="$1"
@@ -40,10 +50,10 @@ do
     exit
   ;;
   check-schema) #operation: verify schema from inside the container
-    podman exec -it postgis_container psql -U user -d geospatial_db -c "\d kbr_gravimetry;"
+    podman exec -it postgis_container psql -U user -d $DATABASE_NAME -c "\d $TABLE_NAME;"
   ;;
   postgis) #operation: enable PostGIS
-    podman exec -it postgis_container psql -U user -d geospatial_db -c "CREATE EXTENSION postgis;"
+    podman exec -it postgis_container psql -U user -d $DATABASE_NAME -c "CREATE EXTENSION postgis;"
   ;;
   test-query) #operation: run a simple query
     poetry run python scripts/space_time_query.py
