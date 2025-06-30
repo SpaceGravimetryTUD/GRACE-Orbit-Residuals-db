@@ -7,6 +7,13 @@ from pathlib import Path
 from dotenv import load_dotenv
 load_dotenv()
 
+f = open('.env','r')
+env_list=list(filter(None,[ s.split('=')[0].split('#')[0] for s in f.read().split('\n')]))
+f.close()
+print('Loaded the following env vars from .env:')
+for f in env_list:
+    print(f'{f} = {os.getenv(f)}')
+
 # --- Command-line arguments ---
 parser = argparse.ArgumentParser(description="Initialize and optionally populate the database.")
 parser.add_argument("--filepath", type=str, help="Path to the .pkl file. If not provided, will look in 'data/' folder.")
