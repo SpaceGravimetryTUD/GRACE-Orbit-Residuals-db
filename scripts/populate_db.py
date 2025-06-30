@@ -10,7 +10,7 @@ from pickle import Unpickler
 # Load environment variables
 load_dotenv()
 
-def load_config(config_file: str = 'config.yaml') -> dict:
+def load_config(config_file: str = 'scripts/config.yaml') -> dict:
   """
   Returns the dictionary stored in 'config_file'. There is no test for this function because it is always called when loading the 'Test' class.
   """
@@ -45,7 +45,27 @@ class TQDMBytesReader(object):
     def __exit__(self, *args, **kwargs):
         return self.tqdm.__exit__(*args, **kwargs)
 
-def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: int = 1000, config: dict) -> None:
+#https://stackoverflow.com/a/39495229
+def chunker(seq, size):
+    # from http://stackoverflow.com/a/434328
+    return (seq[pos:pos + size] for pos in range(0, len(seq), size))
+
+def insert_with_progress(df,engine):
+    chunksize = int(len(df) / 100) # 10%
+    with tqdm(total=len(df)) as pbar:
+        for i, cdf in enumerate(chunker(df, chunksize)):
+            # Use pandas built-in batching via chunksize if batching is enabled
+            df.to_sql(
+                index=False,               # Don't save the DataFrame index as a column
+                if_exists="append",        # Append to the table instead of replacing it
+                name=os.getenv("TABLE_NAME"), # Target table name in the database
+                con=engine,                # Database connection
+                method="multi",            # Insert using efficient multi-insert method
+                chunksize=chunksize, #batch_size if use_batches else None  # Control batching
+            )
+            pbar.update(chunksize)
+
+def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: int = 1000, config: dict = load_config()) -> None:
     """
     Loads a .pkl file and populates the TABLE_NAME table in the database.
     Allows full load or batched inserts based on user choice.
@@ -60,34 +80,28 @@ def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: in
     if not filepath.endswith('.pkl'):
         raise ValueError("File type not recognized. Please select a .pkl file")
 
-    # Load the entire .pkl file as a pandas DataFrame
-    df = pd.read_pickle(filepath).reset_index() # nosec
-    print(f'df:\n{df.head(10)}')
-
     # Load the .pkl file with progress bar
     with open(filepath, "rb") as fd:
         total = os.path.getsize(filepath)
         with TQDMBytesReader(fd, total=total) as pbfd:
             up = Unpickler(pbfd)
-            obj = up.load()
+            df = up.load()
         print(f"Loaded {filepath}")
-    df1=pd.Dataframe(obj)
-    print(f'df1:\n{df.head(10)}')
-
-    exit()
 
     # Keep only the satellite fields we're interested in
     df = df[config['SATELLITE_FIELDS']]
 
-    # Use pandas built-in batching via chunksize if batching is enabled
-    df.to_sql(
-        index=False,               # Don't save the DataFrame index as a column
-        if_exists="append",        # Append to the table instead of replacing it
-        name=os.getenv("TABLE_NAME"), # Target table name in the database
-        con=engine,                # Database connection
-        method="multi",            # Insert using efficient multi-insert method
-        chunksize=batch_size if use_batches else None  # Control batching
-    )
+    insert_with_progress(df,engine)
+
+#    # Use pandas built-in batching via chunksize if batching is enabled
+#    df.to_sql(
+#        index=False,               # Don't save the DataFrame index as a column
+#        if_exists="append",        # Append to the table instead of replacing it
+#        name=os.getenv("TABLE_NAME"), # Target table name in the database
+#        con=engine,                # Database connection
+#        method="multi",            # Insert using efficient multi-insert method
+#        chunksize=batch_size if use_batches else None  # Control batching
+#    )
 
 def add_test_row(filepath: str, engine, config: dict) -> None:
     """
@@ -141,6 +155,5 @@ if __name__ == "__main__":
         engine=engine,
         use_batches=args.use_batches,
         batch_size=args.batch_size,
-        config=load_config(),
     )
     print("Database population completed successfully.")
