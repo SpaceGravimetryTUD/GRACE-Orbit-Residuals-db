@@ -2,20 +2,21 @@ import argparse  # Library for parsing command-line arguments
 import pandas as pd  # Library for handling tabular data (tables like Excel)
 from sqlalchemy import create_engine  # Library for talking to databases
 import os  # Library for system operations, like reading environment variables
+import yaml             # Library for reading YAML-formated files
 from dotenv import load_dotenv
 
-# List of fields (columns) we want to keep from the satellite data
-SATELLITE_FIELDS = [
-    "datetime", "timestamp",
-    "latitude_A", "longitude_A", "altitude_A",
-    "latitude_B", "longitude_B", "altitude_B",
-    "postfit", "observation_vector",
-    "up_combined", "up_local", "up_common", "up_global",
-    "shadow_A", "adtrack_A",
-    "shadow_B", "adtrack_B"
-]
+# Load environment variables
+load_dotenv()
 
-def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: int = 1000) -> None:
+def load_config(config_file: str = 'config.yaml') -> dict:
+  """
+  Returns the dictionary stored in 'config_file'. There is no test for this function because it is always called when loading the 'Test' class.
+  """
+  # load config file
+  with open(config_file, 'r') as file:
+    config = yaml.safe_load(file)
+  # return dict with config details
+  return config
     """
     Loads a .pkl file and populates the TABLE_NAME table in the database.
     Allows full load or batched inserts based on user choice.
@@ -34,7 +35,7 @@ def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: in
     df = pd.read_pickle(filepath).reset_index() # nosec
 
     # Keep only the satellite fields we're interested in
-    df = df[SATELLITE_FIELDS]
+    df = df[config['SATELLITE_FIELDS']]
 
     # Use pandas built-in batching via chunksize if batching is enabled
     df.to_sql(
@@ -46,7 +47,7 @@ def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: in
         chunksize=batch_size if use_batches else None  # Control batching
     )
 
-def add_test_row(filepath: str, engine) -> None:
+def add_test_row(filepath: str, engine, config: dict) -> None:
     """
     Loads a .pkl file and inserts only one row into the TABLE_NAME table.
     Useful for testing purposes.
@@ -63,7 +64,7 @@ def add_test_row(filepath: str, engine) -> None:
     df = pd.read_pickle(filepath).reset_index()
 
     # Keep only the satellite fields we're interested in and select the first row
-    df = df[SATELLITE_FIELDS].head(1)
+    df = df[config['SATELLITE_FIELDS']].head(1)
 
     # Insert this single test row into the database
     df.to_sql(
@@ -97,6 +98,7 @@ if __name__ == "__main__":
         filepath=args.filepath,
         engine=engine,
         use_batches=args.use_batches,
-        batch_size=args.batch_size
+        batch_size=args.batch_size,
+        config=load_config(),
     )
     print("Database population completed successfully.")
