@@ -16,24 +16,30 @@ class KBRGravimetry(Base):
     
     id = Column(Integer, primary_key=True, autoincrement=True)
     timestamp = Column(Float, nullable=False, index=True)  # seconds since 2000-01-01
-    postfit = Column(Float)  # Post-fit residuals (m/s)
+
+    # post/pre fits
+    postfit     = Column(Float)  # Post-fit residuals (m/s)
     observation_vector = Column(Float)  # Pre-fit residuals (m/s)
+
+    # fits after LS
     up_combined = Column(Float)  # Updated total fit (m/s)
-    up_local = Column(Float)  # Local component (m/s)
-    up_common = Column(Float)  # Common component (m/s)
-    up_global = Column(Float)  # Geo-fit component (m/s)
+    up_local    = Column(Float)  # Local component (m/s)
+    up_common   = Column(Float)  # Common component (m/s)
+    up_global   = Column(Float)  # Geo-fit component (m/s)
 
-    latitude_A = Column(Float, nullable=False)  # degrees
+    # GRACE-A
+    latitude_A  = Column(Float, nullable=False)  # degrees
     longitude_A = Column(Float, nullable=False)  # degrees
-    altitude_A = Column(Float)  # km
-    shadow_A = Column(Integer)  # 0/1
-    adtrack_A = Column(Integer)  # 0 = descending, 1 = ascending
+    altitude_A  = Column(Float)  # km
+    shadow_A    = Column(Integer)  # 0/1
+    adtrack_A   = Column(Integer)  # 0 = descending, 1 = ascending
 
-    latitude_B = Column(Float, nullable=False)  # degrees
+    # GRACE-B
+    latitude_B  = Column(Float, nullable=False)  # degrees
     longitude_B = Column(Float, nullable=False)  # degrees
-    altitude_B = Column(Float)  # km
-    shadow_B = Column(Integer)  # 0/1
-    adtrack_B = Column(Integer)  # 0 = descending, 1 = ascending
+    altitude_B  = Column(Float)  # km
+    shadow_B    = Column(Integer)  # 0/1
+    adtrack_B   = Column(Integer)  # 0 = descending, 1 = ascending
 
     datetime = Column(DateTime, nullable=True)  # optional: datetime for convenience
 

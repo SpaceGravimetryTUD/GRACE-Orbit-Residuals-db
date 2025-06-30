@@ -21,7 +21,7 @@ def test_postgis_extension(engine):
     with engine.connect() as connection:
         # First, activate PostGIS
         connection.execute(text("CREATE EXTENSION IF NOT EXISTS postgis;"))
-        
+
         # Then, you can use PostGIS functions safely
         result = connection.execute(
             text("SELECT ST_AsText(ST_Point(30.0, 10.0));")

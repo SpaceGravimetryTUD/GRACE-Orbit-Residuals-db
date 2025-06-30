@@ -11,7 +11,7 @@ load_dotenv()
 def setup_database(engine):
     """Ensure the database schema is created before any tests run."""
     init_db()
-    
+
 
 @pytest.fixture
 def clear_test_row(engine):

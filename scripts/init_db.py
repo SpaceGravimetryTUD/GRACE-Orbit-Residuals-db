@@ -49,7 +49,7 @@ try:
 
     DATABASE_URL = os.getenv("DATABASE_URL")
     if not DATABASE_URL:
-        raise ValueError("DATABASE_URL environment variable not set.")
+        raise ValueError("DATABASE_URL not found in environment variables.")
 
     engine = create_engine(DATABASE_URL)
 

@@ -11,5 +11,5 @@ load_dotenv()
 def engine():
     db_url = os.getenv("DATABASE_URL")
     if not db_url:
-        raise RuntimeError("DATABASE_URL not set in .env")
+        raise RuntimeError("DATABASE_URL not found in environment variables.")
     return create_engine(db_url)

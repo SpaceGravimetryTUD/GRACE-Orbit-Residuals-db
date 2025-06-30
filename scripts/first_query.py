@@ -5,9 +5,7 @@ from scripts.populate_db import load_config
 from sqlalchemy.orm import Session
 
 # Query db using environment variable
-DATABASE_URL = os.getenv("DATABASE_URL")
-engine = create_engine(DATABASE_URL)
-
+engine = create_engine(os.getenv("DATABASE_URL"))
 
 
 def run_firstquery() -> None:
