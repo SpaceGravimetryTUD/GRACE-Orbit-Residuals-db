@@ -91,6 +91,7 @@ def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: in
     # Keep only the satellite fields we're interested in
     df = df[config['SATELLITE_FIELDS']]
 
+    inspect_df(df)
 
     print(f"Populating database...")
 
