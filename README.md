@@ -86,7 +86,7 @@ NB: These instructions were written after the fact. YMMV
 Install prerequisites:
 
 ```bash
-sudo apt install podman pipx
+sudo apt install podman pipx postgresql-client-common postgresql-client
 pip3 install podman-compose
 ```
 

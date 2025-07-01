@@ -29,6 +29,17 @@ do
   -x) #option: set -x
     set -x
   ;;
+  install) #operation: install necessary software
+    #get packages
+    sudo apt-get install postgresql-client-common postgresql-client podman pipx
+    pip3 install podman-compose
+    #Check
+    podman-compose -v
+    pipx ensurepath
+    # Install and check poetry
+    pipx install poetry
+    poetry -V
+  ;;
   down) #operation: turn off the db
     podman-compose down
   ;;
