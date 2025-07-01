@@ -49,6 +49,9 @@ do
   ps) #operation: podman ps
     podman ps
   ;;
+  -l) #operation: list tables
+    psql -l -p $EXTERNAL_PORT -h 127.0.0.1 -U user
+  ;;
   run) #operation: run all following arguments and exit
     poetry run ${@:2}
     exit
