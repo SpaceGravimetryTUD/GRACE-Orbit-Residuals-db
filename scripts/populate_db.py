@@ -73,6 +73,9 @@ def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: in
         use_batches: If True, insert in batches. If False, insert all at once.
         batch_size: Number of rows per batch (only relevant if use_batches=True).
     """
+
+    print(f"Loading data from {filepath}...")
+
     # Safety check: only allow .pkl files
     if not filepath.endswith('.pkl'):
         raise ValueError("File type not recognized. Please select a .pkl file")
@@ -88,6 +91,9 @@ def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: in
     # Keep only the satellite fields we're interested in
     df = df[config['SATELLITE_FIELDS']]
 
+
+    print(f"Populating database...")
+
     insert_with_progress(df,engine)
 
 #    # Use pandas built-in batching via chunksize if batching is enabled
@@ -97,8 +103,10 @@ def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: in
     #    name=getenv("TABLE_NAME"), # Target table name in the database
     #    con=engine,                # Database connection
 #        method="multi",            # Insert using efficient multi-insert method
-#        chunksize=batch_size if use_batches else None  # Control batching
-#    )
+    #    chunksize=batch_size if use_batches else None  # Control batching
+    # )
+
+    print("Database populated successfully.")
 
 def add_test_row(filepath: str, engine, config: dict) -> None:
     """

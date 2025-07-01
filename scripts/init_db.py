@@ -42,20 +42,18 @@ else:
         print("No data file found in 'data/' folder. Skipping population.")
         sys.exit(0)
 
-print(f"Populating database with {data_file}...")
-try:
-    from scripts.populate_db import populate_db
-    from sqlalchemy import create_engine
+# try:
+from scripts.populate_db import populate_db
+from sqlalchemy import create_engine
 
 engine = create_engine(getenv('DATABASE_URL'))
 
     populate_db(
         filepath=str(data_file),
         engine=engine,
-        use_batches=args.use_batches,
-        batch_size=args.batch_size
-    )
-    print("Database populated successfully.")
-except Exception as e:
-    print(f"Failed to populate database: {e}")
-    sys.exit(1)
+    use_batches=args.use_batches,
+    batch_size=args.batch_size
+)
+# except Exception as e:
+#     print(f"Failed to populate database: {e}")
+#     sys.exit(1)
