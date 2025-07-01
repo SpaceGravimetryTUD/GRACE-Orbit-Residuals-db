@@ -2,7 +2,7 @@ import os
 import pytest
 from sqlalchemy import create_engine, text
 from src.machinery import getenv
-from scripts.populate_db import add_test_row
+from scripts.populate_db import add_test_row, load_config
 from src.models import init_db  # Make sure this points to your correct init_db function
 
 @pytest.fixture(scope="session", autouse=True)
@@ -26,7 +26,7 @@ def test_add_test_row(engine, clear_test_row):
     assert test_file and os.path.exists(test_file), "Missing or invalid DATA_PATH"
 
     # Insert one row
-    add_test_row(test_file, engine)
+    add_test_row(test_file, engine, load_config())
 
     # Check it exists
     with engine.connect() as conn:
