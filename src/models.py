@@ -1,18 +1,14 @@
-import os
-from dotenv import load_dotenv
 from sqlalchemy import create_engine, Column, Float, Integer, String, DateTime
 from sqlalchemy.orm import declarative_base, sessionmaker
+from src.machinery import getenv
 
 # If you want spatial queries later, you can reintroduce geoalchemy2
 # from geoalchemy2 import Geometry
 
-# Load environment variables
-load_dotenv()
-
 Base = declarative_base()
 
 class KBRGravimetry(Base):
-    __tablename__ = os.getenv("TABLE_NAME")
+    __tablename__ = getenv("TABLE_NAME")
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     timestamp   = Column(Float, nullable=False, index=True)  # seconds since 2000-01-01
@@ -56,11 +52,7 @@ class KBRGravimetry(Base):
     datetime = Column(DateTime, nullable=True)  # optional: datetime for convenience
 
 # Database setup
-DATABASE_URL = os.getenv("DATABASE_URL")
-if DATABASE_URL is None:
-    raise ValueError("DATABASE_URL not found in environment variables.")
-
-engine = create_engine(DATABASE_URL)
+engine = create_engine(getenv('DATABASE_URL'))
 SessionLocal = sessionmaker(bind=engine)
 
 def init_db():

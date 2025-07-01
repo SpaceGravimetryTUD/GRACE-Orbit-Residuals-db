@@ -2,17 +2,7 @@ import os
 import sys
 import argparse
 from pathlib import Path
-
-# Load your environment
-from dotenv import load_dotenv
-load_dotenv()
-
-f = open('.env','r')
-env_list=list(filter(None,[ s.split('=')[0].split('#')[0] for s in f.read().split('\n')]))
-f.close()
-print('Loaded the following env vars from .env:')
-for f in env_list:
-    print(f'{f} = {os.getenv(f)}')
+from src.machinery import getenv,showenv
 
 # --- Command-line arguments ---
 parser = argparse.ArgumentParser(description="Initialize and optionally populate the database.")
@@ -20,6 +10,9 @@ parser.add_argument("--filepath", type=str, help="Path to the .pkl file. If not 
 parser.add_argument("--use_batches", action="store_true", help="Use batch inserts when populating the database.")
 parser.add_argument("--batch_size", type=int, default=1000, help="Batch size for inserts (default: 1000).")
 args = parser.parse_args()
+
+# show the contents of the .env file
+showenv
 
 # --- Step 1: Initialize the database ---
 print("Initializing database...")
@@ -54,11 +47,7 @@ try:
     from scripts.populate_db import populate_db
     from sqlalchemy import create_engine
 
-    DATABASE_URL = os.getenv("DATABASE_URL")
-    if not DATABASE_URL:
-        raise ValueError("DATABASE_URL not found in environment variables.")
-
-    engine = create_engine(DATABASE_URL)
+engine = create_engine(getenv('DATABASE_URL'))
 
     populate_db(
         filepath=str(data_file),

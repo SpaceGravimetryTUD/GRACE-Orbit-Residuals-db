@@ -1,11 +1,11 @@
 from sqlalchemy import select, create_engine, and_
-import os
+from src.machinery import getenv
 from src.models import KBRGravimetry
 from scripts.populate_db import load_config
 from sqlalchemy.orm import Session
 
 # Query db using environment variable
-engine = create_engine(os.getenv("DATABASE_URL"))
+engine = create_engine(getenv("DATABASE_URL"))
 
 
 def run_firstquery() -> None:

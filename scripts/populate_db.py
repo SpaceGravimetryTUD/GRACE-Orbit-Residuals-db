@@ -3,12 +3,9 @@ import pandas as pd     # Library for handling tabular data (tables like Excel)
 from sqlalchemy import create_engine  # Library for talking to databases
 import os               # Library for system operations, like reading environment variables
 import yaml             # Library for reading YAML-formated files
-from dotenv import load_dotenv
 from tqdm import tqdm   # Library to make progress bars
 from pickle import Unpickler
-
-# Load environment variables
-load_dotenv()
+from src.machinery import inspect_df, getenv
 
 def load_config(config_file: str = 'scripts/config.yaml') -> dict:
   """
@@ -58,7 +55,7 @@ def insert_with_progress(df,engine):
             df.to_sql(
                 index=False,               # Don't save the DataFrame index as a column
                 if_exists="append",        # Append to the table instead of replacing it
-                name=os.getenv("TABLE_NAME"), # Target table name in the database
+                name=getenv("TABLE_NAME"), # Target table name in the database
                 con=engine,                # Database connection
                 method="multi",            # Insert using efficient multi-insert method
                 chunksize=chunksize, #batch_size if use_batches else None  # Control batching
@@ -96,9 +93,9 @@ def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: in
 #    # Use pandas built-in batching via chunksize if batching is enabled
 #    df.to_sql(
 #        index=False,               # Don't save the DataFrame index as a column
-#        if_exists="append",        # Append to the table instead of replacing it
-#        name=os.getenv("TABLE_NAME"), # Target table name in the database
-#        con=engine,                # Database connection
+    #    if_exists="append",        # Append to the table instead of replacing it
+    #    name=getenv("TABLE_NAME"), # Target table name in the database
+    #    con=engine,                # Database connection
 #        method="multi",            # Insert using efficient multi-insert method
 #        chunksize=batch_size if use_batches else None  # Control batching
 #    )
@@ -126,7 +123,7 @@ def add_test_row(filepath: str, engine, config: dict) -> None:
     df.to_sql(
         index=False,              # Don't save the DataFrame index as a column
         if_exists="append",       # Append to the table instead of replacing it
-        name=os.getenv("TABLE_NAME"),# Target table name
+        name=getenv("TABLE_NAME"),# Target table name
         con=engine,               # Database connection
         method="multi",           # Insert using efficient multi-insert method
         chunksize=1               # Only one row
@@ -144,10 +141,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Database connection
-    DATABASE_URL = os.getenv("DATABASE_URL")
-    if not DATABASE_URL:
-        raise EnvironmentError("DATABASE_URL not found in environment variables.")
-    engine = create_engine(DATABASE_URL)
+
+    engine = create_engine(getenv('DATABASE_URL'))
 
     # Run population
     populate_db(

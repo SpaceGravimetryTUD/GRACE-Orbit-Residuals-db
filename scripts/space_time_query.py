@@ -1,24 +1,17 @@
-import os
 import argparse
 import pandas as pd
-from dotenv import load_dotenv
+from src.machinery import getenv
 from sqlalchemy import create_engine, text
 from src.utils.utils import check_polygon_validity
 
-# Load environment variables
-load_dotenv()
-
 # Setup the database connection
-DATABASE_URL = os.getenv("DATABASE_URL")
-if DATABASE_URL is None:
-    raise ValueError("DATABASE_URL not found in environment variables.")
-engine = create_engine(DATABASE_URL)
+engine = create_engine(getenv('DATABASE_URL'))
 
 def query_satellite_data_by_time(start_time, end_time):
     """Query the TABLE_NAME table for records within a time window."""
     query = text(f"""
         SELECT id, datetime, "latitude_A", "longitude_A", postfit, up_combined
-        FROM {os.getenv("TABLE_NAME")}
+        FROM {getenv("TABLE_NAME")}
         WHERE datetime BETWEEN :start_time AND :end_time
         ORDER BY datetime ASC
     """)
@@ -39,7 +32,7 @@ def query_satellite_data_by_polygon(polygon_coordinates):
 
     query = text(f"""
         SELECT id, datetime, "latitude_A", "longitude_A", postfit, up_combined
-        FROM {os.getenv("TABLE_NAME")}
+        FROM {getenv("TABLE_NAME")}
         WHERE ST_Contains(
             ST_GeomFromText(:polygon, 4326),
             ST_SetSRID(ST_MakePoint("longitude_A", "latitude_A"), 4326)
@@ -62,7 +55,7 @@ def query_satellite_data_within_polygon(start_time, end_time, polygon_coordinate
 
     query = text(f"""
         SELECT id, datetime, "latitude_A", "longitude_A", postfit, up_combined
-        FROM {os.getenv("TABLE_NAME")}
+        FROM {getenv("TABLE_NAME")}
         WHERE datetime BETWEEN :start_time AND :end_time
         AND ST_Contains(
             ST_GeomFromText(:polygon, 4326),
