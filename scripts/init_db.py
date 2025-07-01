@@ -48,9 +48,9 @@ from sqlalchemy import create_engine
 
 engine = create_engine(getenv('DATABASE_URL'))
 
-    populate_db(
-        filepath=str(data_file),
-        engine=engine,
+populate_db(
+    filepath=str(data_file),
+    engine=engine,
     use_batches=args.use_batches,
     batch_size=args.batch_size
 )
