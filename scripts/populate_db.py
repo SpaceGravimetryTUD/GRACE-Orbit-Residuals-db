@@ -88,8 +88,12 @@ def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: in
             df = up.load()
         print(f"Loaded {filepath}")
 
-    # Keep only the satellite fields we're interested in
-    df = df[config['SATELLITE_FIELDS']]
+    # Try keeping only the satellite fields we're interested in. If does not succeed reset index to prevent first collumn from being dataframe index column
+    try:
+        df = df[config['SATELLITE_FIELDS']]
+    except:
+        df = df.reset_index()
+        df = df[config['SATELLITE_FIELDS']]
 
     inspect_df(df)
 
