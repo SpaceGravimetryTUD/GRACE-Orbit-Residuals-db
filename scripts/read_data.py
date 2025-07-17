@@ -1,16 +1,11 @@
-import os
 import pandas as pd
+from src.machinery import getenv
 
-# Load your environment
-from dotenv import load_dotenv
-load_dotenv()
-
-
-def read_pkl(filepath: str) -> None: 
+def read_pkl(filepath: str) -> None:
     df = pd.read_pickle(filepath).reset_index() # nosec
     return df
 
 # Main should print the dataframe if the script is run directly
 if __name__ == "__main__":
-    data = read_pkl("data/flat-data-test.pkl")
+    data = read_pkl(getenv('DATA_PATH'))
     print(data)

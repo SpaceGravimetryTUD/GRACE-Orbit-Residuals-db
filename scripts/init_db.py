@@ -2,10 +2,7 @@ import os
 import sys
 import argparse
 from pathlib import Path
-
-# Load your environment
-from dotenv import load_dotenv
-load_dotenv()
+from src.machinery import getenv,showenv
 
 # --- Command-line arguments ---
 parser = argparse.ArgumentParser(description="Initialize and optionally populate the database.")
@@ -13,6 +10,9 @@ parser.add_argument("--filepath", type=str, help="Path to the .pkl file. If not 
 parser.add_argument("--use_batches", action="store_true", help="Use batch inserts when populating the database.")
 parser.add_argument("--batch_size", type=int, default=1000, help="Batch size for inserts (default: 1000).")
 args = parser.parse_args()
+
+# show the contents of the .env file
+showenv
 
 # --- Step 1: Initialize the database ---
 print("Initializing database...")
@@ -42,24 +42,18 @@ else:
         print("No data file found in 'data/' folder. Skipping population.")
         sys.exit(0)
 
-print(f"Populating database with {data_file}...")
-try:
-    from scripts.populate_db import populate_db
-    from sqlalchemy import create_engine
+# try:
+from scripts.populate_db import populate_db
+from sqlalchemy import create_engine
 
-    DATABASE_URL = os.getenv("DATABASE_URL")
-    if not DATABASE_URL:
-        raise ValueError("DATABASE_URL environment variable not set.")
+engine = create_engine(getenv('DATABASE_URL'))
 
-    engine = create_engine(DATABASE_URL)
-
-    populate_db(
-        filepath=str(data_file),
-        engine=engine,
-        use_batches=args.use_batches,
-        batch_size=args.batch_size
-    )
-    print("Database populated successfully.")
-except Exception as e:
-    print(f"Failed to populate database: {e}")
-    sys.exit(1)
+populate_db(
+    filepath=str(data_file),
+    engine=engine,
+    use_batches=args.use_batches,
+    batch_size=args.batch_size
+)
+# except Exception as e:
+#     print(f"Failed to populate database: {e}")
+#     sys.exit(1)
