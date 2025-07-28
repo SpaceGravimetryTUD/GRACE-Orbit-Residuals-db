@@ -141,7 +141,7 @@ DATABASE_URL="postgresql://user:password@localhost:5432/${DATABASE_NAME}"
 DATA_PATH=/mnt/GRACEcube/Data/L1B_res/CSR_latlon_data/flat-data/v2/flat-data-2003.v2.pkl
 ```
 
-To export environmental variables in `.env` run:
+To load environmental variables in `.env` run:
 
 ```bash
 source .env
