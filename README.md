@@ -42,6 +42,7 @@ h4:before {
 
 <p class="titlesize">GRACE Geospatial Data Processing Stack</p>
 
+
 This project sets up a scalable geospatial data pipeline using **PostgreSQL + PostGIS + TimescaleDB** , **SQLAlchemy**, and **Podman Compose**. It facilitates efficient ingestion, validation, and querying of high-frequency satellite data from the GRACE mission.
 
 ---
