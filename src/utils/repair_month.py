@@ -27,7 +27,7 @@ def repair_month(df_month: pd.DataFrame ,
     # Compute expected full time range
     start_time = df_month[time_column].min().floor('D')
     end_time = (start_time + pd.DateOffset(months=1)).floor('D')
-    expected_times = pd.date_range(start=start_time, end=end_time - pd.Timedelta(seconds=interval_seconds), freq=f"{interval_seconds}S")
+    expected_times = pd.date_range(start=start_time, end=end_time - pd.Timedelta(seconds=interval_seconds), freq=f"{interval_seconds}s")
 
     # Find missing timestamps
     real_times = df_month[time_column]

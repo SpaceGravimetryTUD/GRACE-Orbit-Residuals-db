@@ -1,12 +1,13 @@
 import pytest
 from src.models import SessionLocal, KBRGravimetry
 from sqlalchemy import text
+from src.machinery import getenv
 
 def test_fetch_first_satellite_row(engine):
     session = SessionLocal()
     try:
         first_row = session.query(KBRGravimetry).first()
-        assert first_row is not None, "No data found in kbr_gravimetry table!"
+        assert first_row is not None, f"No data found in {getenv('TABLE_NAME')} table!"
         print(
             f"First row fetched: "
             f"timestamp={first_row.timestamp}, "
@@ -21,7 +22,7 @@ def test_postgis_extension(engine):
     with engine.connect() as connection:
         # First, activate PostGIS
         connection.execute(text("CREATE EXTENSION IF NOT EXISTS postgis;"))
-        
+
         # Then, you can use PostGIS functions safely
         result = connection.execute(
             text("SELECT ST_AsText(ST_Point(30.0, 10.0));")
@@ -35,8 +36,8 @@ def test_timescaledb_extension(engine):
     try:
         # Fetch the first datetime from your data
         first_row = session.query(KBRGravimetry.datetime).first()
-        assert first_row is not None, "No datetime data found in kbr_gravimetry table!"
-        
+        assert first_row is not None, f"No datetime data found in {getenv('TABLE_NAME')} table!"
+
         real_datetime = first_row.datetime  # Now it's already a proper datetime
 
         # Use TimescaleDB time_bucket function
