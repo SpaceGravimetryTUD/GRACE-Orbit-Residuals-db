@@ -96,24 +96,56 @@ DATA_PATH=data/flat-data-test.pkl
 Ensure the database is running (`podman-compose up -d`) before using scripts.
 
 ---
+### 6️⃣ (Optional) Enable PostGIS Extension
 
-### 6️⃣ Initialize the Database Schema
+If needed, you can manually enable PostGIS (only once):
 
-This will create the tables and prepare the schema:
-
-```bash
-poetry run python scripts/init_db.py --use_batches
-```
-
-(Optional) Verify schema from inside the container:
-
-```bash
-podman exec -it postgis_container psql -U user -d geospatial_db -c "\d kbr_gravimetry;"
+```sql
+CREATE EXTENSION postgis;
 ```
 
 ---
 
-### 7️⃣ Insert & Query Example Data
+### 7️⃣ Initialize the Database Schema with Alembic
+
+This project uses Alembic for database migrations. Initialize the schema:
+
+```bash
+# Generate initial migration
+poetry run alembic revision --autogenerate -m "Initial migration"
+
+# ⚠️ IMPORTANT: Edit the generated migration file
+# The migration may include `op.drop_table('spatial_ref_sys')` due to PostGIS system tables
+# Comment out or remove any lines that drop PostGIS system tables like:
+# - spatial_ref_sys
+# - geography_columns  
+# - geometry_columns
+```
+
+# Apply the migration
+```bash
+poetry run alembic upgrade head
+```
+Future Enhancement: The PostGIS system table issue could be resolved by implementing schema-based separation or improving the Alembic configuration to automatically exclude PostGIS system tables.
+---
+
+### 8️⃣ Load Sample Data
+This will create the tables and load initial data:
+
+```bash
+poetry run python scripts/init_db.py --use_batches --filepath <path to flat data file>
+```
+If you get the error:
+`Failed to initialize database: No module named 'src'`
+then you are in the wrong directory.
+# Optional: verify schema from inside the container:
+```bash
+bashpodman exec -it postgis_container psql -U user -d $DATABASE_NAME -c "\d $TABLE_NAME;"
+```
+
+The variables $DATABASE_NAME and $TABLE_NAME are defined in .env.
+---
+### 9️⃣ Insert & Query Example Data
 
 Ensure `data/flat-data-test.pkl` exists:
 
@@ -136,17 +168,8 @@ run_firstquery()
 
 ---
 
-### 8️⃣ (Optional) Enable PostGIS Extension
 
-If needed, you can manually enable PostGIS (only once):
-
-```sql
-CREATE EXTENSION postgis;
-```
-
----
-
-### 9️⃣ Restart or Clean the Database (Optional)
+## Restart or Clean the Database (Optional)
 
 To completely reset:
 
