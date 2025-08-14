@@ -88,8 +88,12 @@ def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: in
             df = up.load()
         print(f"Loaded {filepath}")
 
-    # Keep only the satellite fields we're interested in
-    df = df[config['SATELLITE_FIELDS']]
+    # Try keeping only the satellite fields we're interested in. If does not succeed reset index to prevent first collumn from being dataframe index column
+    try:
+        df = df[config['SATELLITE_FIELDS']]
+    except:
+        df = df.reset_index()
+        df = df[config['SATELLITE_FIELDS']]
 
     inspect_df(df)
 
@@ -126,7 +130,11 @@ def add_test_row(filepath: str, engine, config: dict) -> None:
     df = pd.read_pickle(filepath).reset_index()
 
     # Keep only the satellite fields we're interested in and select the first row
-    df = df[config['SATELLITE_FIELDS']].head(1)
+    df = df[config['SATELLITE_FIELDS']]
+
+    df = df[df['timestamp']==df['timestamp'].min()].head(1)
+
+    df.loc[0,"timestamp"] = df.loc[0,"timestamp"] - 0.05 * df.loc[0,"timestamp"]
 
     # Insert this single test row into the database
     df.to_sql(
@@ -137,6 +145,33 @@ def add_test_row(filepath: str, engine, config: dict) -> None:
         method="multi",           # Insert using efficient multi-insert method
         chunksize=1               # Only one row
     )
+
+def return_test_row(filepath: str, config: dict) -> pd.core.frame.DataFrame:
+    """
+    Loads a .pkl file and inserts only one row into the TABLE_NAME table.
+    Useful for testing purposes.
+
+    Args:
+        engine: SQLAlchemy engine to connect to the database.
+        filepath: Path to the .pkl file containing the satellite data.
+    """
+    # Safety check: only allow .pkl files
+    if not filepath.endswith('.pkl'):
+        raise ValueError("File type not recognized. Please select a .pkl file")
+
+    # Load the file as a pandas DataFrame
+    df = pd.read_pickle(filepath).reset_index()
+
+    # Keep only the satellite fields we're interested in and select the first row
+    df = df[config['SATELLITE_FIELDS']]
+
+    df = df[df['timestamp']==df['timestamp'].min()].head(1)
+
+    df.loc[0,"timestamp"] = df.loc[0,"timestamp"] - 0.05 * df.loc[0,"timestamp"]
+
+    return df
+
+    
 
 # ------------------ #
 # Command-Line Setup #
