@@ -47,12 +47,12 @@ def chunker(seq, size):
     # from http://stackoverflow.com/a/434328
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
-def insert_with_progress(df,engine):
-    chunksize = int(len(df) / 100) # 10%
+def insert_with_progress(df,engine,chunksize):
+    chunks = [df.iloc[i:i+chunksize] for i in range(0, len(df), chunksize)]
     with tqdm(total=len(df)) as pbar:
-        for i, cdf in enumerate(chunker(df, chunksize)):
+        for i, cdf in enumerate(chunks):
             # Use pandas built-in batching via chunksize if batching is enabled
-            df.to_sql(
+            cdf.to_sql(
                 index=False,               # Don't save the DataFrame index as a column
                 if_exists="append",        # Append to the table instead of replacing it
                 name=getenv("TABLE_NAME"), # Target table name in the database
@@ -99,7 +99,7 @@ def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: in
 
     print(f"Populating database...")
 
-    insert_with_progress(df,engine)
+    insert_with_progress(df,engine,batch_size)
 
     # # Use pandas built-in batching via chunksize if batching is enabled
     # df.to_sql(
