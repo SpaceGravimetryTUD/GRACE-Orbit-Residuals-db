@@ -1,15 +1,26 @@
 #!/bin/bash
 set -e
 
+DIR=$(cd $(dirname $BASH_SOURCE)/..; pwd)
+
+if [ ! -s $DIR/.env ]
+then
+  echo "ERROR: cannot find $DIR/.env file"
+  exit 3
+fi
+
+source $DIR/.env
+
+
 # Wait for PostgreSQL to be ready inside the container
 echo "Waiting for PostgreSQL to be ready..."
-until psql -U user -d geospatial_db -c '\q' 2>/dev/null; do
+until psql -p $EXTERNAL_PORT -h 127.0.0.1  -U user -d $DATABASE_NAME -c '\q' 2>/dev/null; do
   sleep 1
 done
 
 # Truncate all tables
 echo "Truncating all tables in the public schema..."
-psql -U user -d geospatial_db -c "
+psql -p $EXTERNAL_PORT -h 127.0.0.1 -U user -d $DATABASE_NAME -c "
 DO \$\$
 DECLARE
     stmt TEXT;

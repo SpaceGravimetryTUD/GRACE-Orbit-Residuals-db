@@ -1,14 +1,15 @@
 services:
   postgis_container:
+    env_file: ".env"
     image: timescale/timescaledb-ha:pg14-oss-latest
     container_name: postgis_container
     restart: always
     environment:
-      POSTGRES_DB: geospatial_db
+      POSTGRES_DB: geospatial_db #must be in agreement with the value of the variable DATABASE_NAME defined in .env
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     ports:
-      - "5432:5432"
+      - "${EXTERNAL_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/clean_up.sh:/docker-entrypoint-initdb.d/clean_up.sh
