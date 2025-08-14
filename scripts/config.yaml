@@ -26,3 +26,4 @@ SATELLITE_FIELDS:
   - variant
   - label
   - release
+  - datetime
