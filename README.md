@@ -231,7 +231,11 @@ poetry run <your-command>
 
 ### 7️⃣ Initialize the Database Schema with Alembic
 
-This project uses Alembic for database migrations. Initialize the schema:
+This project uses Alembic for database migrations.
+
+Check first if any previous (initial) migration version is stored in `alembic\versions\*_initial_migration.py`.
+
+If no version is found, initialize the schema by generating an initial migration:
 
 ```bash
 # Generate initial migration
@@ -250,6 +254,7 @@ poetry run alembic revision --autogenerate -m "Initial migration"
 poetry run alembic upgrade head
 ```
 Future Enhancement: The PostGIS system table issue could be resolved by implementing schema-based separation or improving the Alembic configuration to automatically exclude PostGIS system tables.
+
 ---
 
 
