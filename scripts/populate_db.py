@@ -1,6 +1,6 @@
 import argparse         # Library for parsing command-line arguments
 import pandas as pd     # Library for handling tabular data (tables like Excel)
-from sqlalchemy import create_engine  # Library for talking to databases
+from sqlalchemy import create_engine, text  # Library for talking to databases
 import os               # Library for system operations, like reading environment variables
 import sys
 import yaml             # Library for reading YAML-formated files
@@ -97,6 +97,11 @@ def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: in
     except:
         df = df.reset_index()
         intersec_satfields = sorted(set(config['SATELLITE_FIELDS']).intersection(list(df.columns)) ,key=lambda x:config['SATELLITE_FIELDS'].index(x))
+        df = df[intersec_satfields]
+
+    with engine.connect() as conn:
+        getSQLtable = pd.read_sql_query(text(f"""SELECT * FROM {getenv("TABLE_NAME")}"""), conn)
+        intersec_satfields = sorted(set(list(df.columns)).intersection(list(getSQLtable.columns)) ,key=lambda x:list(df.columns).index(x))
         df = df[intersec_satfields]
 
     inspect_df(df)
