@@ -111,3 +111,8 @@ docker-compose.override.yml
 # Data
 data/
 rsyncf.list
+
+# Output
+*.nc
+*.csv
+

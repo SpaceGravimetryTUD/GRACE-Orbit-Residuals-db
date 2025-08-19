@@ -106,7 +106,7 @@ poetry -V
 
 ---
 
-## Clone the Repository
+## 2️⃣ Clone the Repository
 
 ```bash
 git clone https://github.com/SpaceGravimetryTUD/GRACE-Orbit-Residuals-db
@@ -121,7 +121,7 @@ git branch v1-flat-data-test
 
 ---
 
-## Environment Configuration
+##5️⃣ Environment Configuration
 
 Make sure to have a data directory where you store your data.
 
@@ -137,8 +137,14 @@ Create a `.env` file at the project root:
 TABLE_NAME=kbr_gravimetry_v2
 EXTERNAL_PORT=XXXX #Replace with XXXX with available external port; in grace-cube.lr.tudelft.nl, port 3306 is open
 DATABASE_NAME=geospatial_db
-DATABASE_URL=postgresql://user:password@localhost:5432/$DATABASE_NAME
+DATABASE_URL="postgresql://user:password@localhost:5432/${DATABASE_NAME}"
 DATA_PATH=/mnt/GRACEcube/Data/L1B_res/CSR_latlon_data/flat-data/v2/flat-data-2003.v2.pkl
+```
+
+To load environmental variables in `.env` run:
+
+```bash
+source .env
 ```
 
 ---
@@ -151,14 +157,28 @@ If error is triggered when running timescaledb image, add the following line to 
    unqualified-search-registries=["docker.io"]
 ```
 
----
-
 ## Update sub[gu]id
 
 ```bash
 echo "$USER:100000:65536" >> /etc/subuid
 echo "$USER:100000:65536" >> /etc/subgid
 ```
+
+---
+### 6️⃣ (Optional) Enable PostGIS Extension
+
+
+If needed, you can manually enable PostGIS (only once):
+
+```sql
+CREATE EXTENSION postgis;
+```
+
+---
+
+### 7️⃣ Initialize the Database Schema with Alembic
+
+This project uses Alembic for database migrations. Initialize the schema:
 
 ---
 
@@ -209,33 +229,47 @@ poetry run <your-command>
 
 ---
 
-## Initialize the Database Schema
+### 7️⃣ Initialize the Database Schema with Alembic
 
-This will create the tables and prepare the schema:
+This project uses Alembic for database migrations. Initialize the schema:
+
+```bash
+# Generate initial migration
+poetry run alembic revision --autogenerate -m "Initial migration"
+
+# ⚠️ IMPORTANT: Edit the generated migration file
+# The migration may include `op.drop_table('spatial_ref_sys')` due to PostGIS system tables
+# Comment out or remove any lines that drop PostGIS system tables like:
+# - spatial_ref_sys
+# - geography_columns  
+# - geometry_columns
+```
+
+# Apply the migration
+```bash
+poetry run alembic upgrade head
+```
+Future Enhancement: The PostGIS system table issue could be resolved by implementing schema-based separation or improving the Alembic configuration to automatically exclude PostGIS system tables.
+---
+
+
+### 8️⃣ Load Sample Data
+This will create the tables and load initial data:
 
 ```bash
 poetry run python scripts/init_db.py --use_batches --filepath <path to flat data file>
 ```
-
-> If you get the error:
-> 
-> ```
-> Failed to initialize database: No module named 'src'
-> ```
-> 
-> then you are in the wrong directory.
-
-## Optional: verify schema from inside the container:
-
+If you get the error:
+`Failed to initialize database: No module named 'src'`
+then you are in the wrong directory.
+# Optional: verify schema from inside the container:
 ```bash
-podman exec -it postgis_container psql -U user -d $DATABASE_NAME -c "\d $TABLE_NAME;"
+bashpodman exec -it postgis_container psql -U user -d $DATABASE_NAME -c "\d $TABLE_NAME;"
 ```
 
-The variables `$DATABASE_NAME` and `$TABLE_NAME` are defined in `.env`.
-
+The variables $DATABASE_NAME and $TABLE_NAME are defined in .env.
 ---
-
-## Insert & Query Example Data
+### 9️⃣ Insert & Query Example Data
 
 Ensure `data/flat-data-test.pkl` exists:
 
@@ -255,26 +289,9 @@ Then in Python:
 from scripts.first_query import run_firstquery
 run_firstquery()
 ```
-
 ---
 
-## Optional: Enable PostGIS Extension
-
-Manually enable PostGIS (only once):
-
-```bash
-podman exec -it postgis_container psql -U user -d $DATABASE_NAME -c "CREATE EXTENSION postgis;"
-```
-
-Test a simple query:
-
-```bash
-poetry run python scripts/space_time_query.py
-```
-
----
-
-## Optional: Restart or Clean the Database
+## Restart or Clean the Database (Optional)
 
 To completely uninstall:
 
@@ -307,6 +324,7 @@ poetry run pytest
 
 ```text
 .
+├── alembic/          # Migration files along with env.py
 ├── scripts/          # Scripts to init DB, ingest data, and run spatial/temporal queries
 ├── src/              # Source code including SQLAlchemy models and utility functions
 ├── tests/            # Unit tests for ingestion, queries, and extension validation

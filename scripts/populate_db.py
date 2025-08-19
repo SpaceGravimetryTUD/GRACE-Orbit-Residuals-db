@@ -1,11 +1,14 @@
 import argparse         # Library for parsing command-line arguments
 import pandas as pd     # Library for handling tabular data (tables like Excel)
-from sqlalchemy import create_engine  # Library for talking to databases
+from sqlalchemy import create_engine, text  # Library for talking to databases
 import os               # Library for system operations, like reading environment variables
+import sys
 import yaml             # Library for reading YAML-formated files
 from tqdm import tqdm   # Library to make progress bars
 from pickle import Unpickler
+from pathlib import Path
 from src.machinery import inspect_df, getenv
+
 
 def load_config(config_file: str = 'scripts/config.yaml') -> dict:
   """
@@ -47,12 +50,12 @@ def chunker(seq, size):
     # from http://stackoverflow.com/a/434328
     return (seq[pos:pos + size] for pos in range(0, len(seq), size))
 
-def insert_with_progress(df,engine):
-    chunksize = int(len(df) / 100) # 10%
+def insert_with_progress(df,engine,chunksize):
+    chunks = [df.iloc[i:i+chunksize] for i in range(0, len(df), chunksize)]
     with tqdm(total=len(df)) as pbar:
-        for i, cdf in enumerate(chunker(df, chunksize)):
+        for i, cdf in enumerate(chunks):
             # Use pandas built-in batching via chunksize if batching is enabled
-            df.to_sql(
+            cdf.to_sql(
                 index=False,               # Don't save the DataFrame index as a column
                 if_exists="append",        # Append to the table instead of replacing it
                 name=getenv("TABLE_NAME"), # Target table name in the database
@@ -88,14 +91,24 @@ def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: in
             df = up.load()
         print(f"Loaded {filepath}")
 
-    # Keep only the satellite fields we're interested in
-    df = df[config['SATELLITE_FIELDS']]
+    # Try keeping only the satellite fields we're interested in. If does not succeed reset index to prevent first collumn from being dataframe index column
+    try:
+        df = df[config['SATELLITE_FIELDS']]
+    except:
+        df = df.reset_index()
+        intersec_satfields = sorted(set(config['SATELLITE_FIELDS']).intersection(list(df.columns)) ,key=lambda x:config['SATELLITE_FIELDS'].index(x))
+        df = df[intersec_satfields]
+
+    with engine.connect() as conn:
+        getSQLtable = pd.read_sql_query(text(f"""SELECT * FROM {getenv("TABLE_NAME")}"""), conn)
+        intersec_satfields = sorted(set(list(df.columns)).intersection(list(getSQLtable.columns)) ,key=lambda x:list(df.columns).index(x))
+        df = df[intersec_satfields]
 
     inspect_df(df)
 
     print(f"Populating database...")
 
-    insert_with_progress(df,engine)
+    insert_with_progress(df,engine,batch_size)
 
     # # Use pandas built-in batching via chunksize if batching is enabled
     # df.to_sql(
@@ -126,7 +139,16 @@ def add_test_row(filepath: str, engine, config: dict) -> None:
     df = pd.read_pickle(filepath).reset_index()
 
     # Keep only the satellite fields we're interested in and select the first row
-    df = df[config['SATELLITE_FIELDS']].head(1)
+    try:
+        df = df[config['SATELLITE_FIELDS']]
+    except:
+        df = df.reset_index()
+        intersec_satfields = sorted(set(config['SATELLITE_FIELDS']).intersection(list(df.columns)) ,key=lambda x:config['SATELLITE_FIELDS'].index(x))
+        df = df[intersec_satfields]
+
+    df = df[df['timestamp']==df['timestamp'].min()].head(1)
+
+    df.loc[0,"timestamp"] = df.loc[0,"timestamp"] - 0.05 * df.loc[0,"timestamp"]
 
     # Insert this single test row into the database
     df.to_sql(
@@ -138,26 +160,78 @@ def add_test_row(filepath: str, engine, config: dict) -> None:
         chunksize=1               # Only one row
     )
 
+def return_test_row(filepath: str, config: dict) -> pd.core.frame.DataFrame:
+    """
+    Loads a .pkl file and inserts only one row into the TABLE_NAME table.
+    Useful for testing purposes.
+
+    Args:
+        engine: SQLAlchemy engine to connect to the database.
+        filepath: Path to the .pkl file containing the satellite data.
+    """
+    # Safety check: only allow .pkl files
+    if not filepath.endswith('.pkl'):
+        raise ValueError("File type not recognized. Please select a .pkl file")
+
+    # Load the file as a pandas DataFrame
+    df = pd.read_pickle(filepath).reset_index()
+
+    # Keep only the satellite fields we're interested in and select the first row
+    df = df[config['SATELLITE_FIELDS']]
+
+    df = df[df['timestamp']==df['timestamp'].min()].head(1)
+
+    df.loc[0,"timestamp"] = df.loc[0,"timestamp"] - 0.05 * df.loc[0,"timestamp"]
+
+    return df
+
+    
+
 # ------------------ #
 # Command-Line Setup #
 # ------------------ #
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Populate the KBR Gravimety Data table from a .pkl file.")
-    parser.add_argument("--filepath", type=str, required=True, help="Path to the .pkl data file.")
+    parser.add_argument("--filepath", type=str, help="Path to the .pkl data file.")
     parser.add_argument("--use_batches", action="store_true", help="Use batch inserts (default: False).")
     parser.add_argument("--batch_size", type=int, default=1000, help="Batch size to use when batching (default: 1000).")
     args = parser.parse_args()
 
     # Database connection
 
-    engine = create_engine(getenv('DATABASE_URL'))
+    # Determine the data file to use
+    if args.filepath:
+        data_file = Path(args.filepath)
+        if not data_file.exists():
+            print(f"Specified file {data_file} does not exist.")
+            sys.exit(1)
+    else:
+        # Try to find a .pkl file in 'data/' folder
+        DATA_DIR = Path("data")
+        data_files = list(DATA_DIR.glob("*.pkl"))
+        if data_files:
+            data_file = data_files[0]
+            print(f"Found data file(s): {[f.name for f in data_files]}")
+        else:
+            print("No data file found in 'data/' folder. Skipping population.")
+            sys.exit(0)
 
-    # Run population
-    populate_db(
-        filepath=args.filepath,
-        engine=engine,
-        use_batches=args.use_batches,
-        batch_size=args.batch_size,
-    )
-    print("Database population completed successfully.")
+
+    print(f"Populating database with {data_file}...")
+
+    try:
+        engine = create_engine(getenv('DATABASE_URL'))
+
+        populate_db(
+            filepath=str(data_file),
+            engine=engine,
+            use_batches=args.use_batches,
+            batch_size=args.batch_size
+        )
+    
+        print("Database population completed successfully.")
+
+    except Exception as e:
+        print(f"Failed to populate database: {e}")
+        sys.exit(1)
