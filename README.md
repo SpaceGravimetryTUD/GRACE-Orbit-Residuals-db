@@ -170,8 +170,8 @@ echo "$USER:100000:65536" >> /etc/subgid
 
 If needed, you can manually enable PostGIS (only once):
 
-```sql
-CREATE EXTENSION postgis;
+```bash
+podman exec -it postgis_container psql -U user -d $DATABASE_NAME -c "CREATE EXTENSION postgis;"
 ```
 
 ---
