@@ -129,7 +129,7 @@ echo "$USER:100000:65536" >> /etc/subgid
 If needed, you can manually enable PostGIS (only once):
 
 
-```sh
+```bash
 podman exec -it postgis_container psql -U user -d $DATABASE_NAME -c "CREATE EXTENSION postgis;"
 ```
 
@@ -255,14 +255,30 @@ Run a sample query:
 poetry run python
 ```
 
-Then in Python:
+If you have not populated the databse yet, please run the following command:
+
+```bash
+poetry run python scripts/populate_db.py --use_batches
+```
+
+YOu can also do so be defining the size of each batch:
+
+```bash
+poetry run python scripts/populate_db.py --use_batches --batch_size=10000
+```
+
+Then in Python you can try your first simple query:
 
 ```python
 from scripts.first_query import run_firstquery
 run_firstquery()
 ```
 
----
+or start running your own spatiotemporal queries using `space_time_query.py` from the command line. For example:
+
+```bash
+poetry run python scripts/space_time_query.py --start_time="2012-02-29T00:00:00" --end_time="2012-04-01T00:00:00"  --polygon='130 -10,240 -10,240 10,130 10,130 -10' --output_format='csv'
+```
 
 ## Restart or Clean the Database (Optional)
 
