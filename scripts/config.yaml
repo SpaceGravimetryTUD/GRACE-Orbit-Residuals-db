@@ -10,20 +10,20 @@ SATELLITE_FIELDS:
   - longitude_A
   - altitude_A
   - shadow_A
-  - irrelevant_A
+  # - irrelevant_A
   - adtrack_A
   - latitude_B
   - longitude_B
   - altitude_B
   - shadow_B
-  - irrelevant_B
+  # - irrelevant_B
   - adtrack_B
-  - longitude_MP
-  - latitude_MP
-  - altitude_MP
-  - latitude_MP
-  - source
-  - variant
-  - label
-  - release
+  # - longitude_MP
+  # - latitude_MP
+  # - altitude_MP
+  # - latitude_MP
+  # - source
+  # - variant
+  # - label
+  # - release
   - datetime
