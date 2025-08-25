@@ -110,16 +110,6 @@ def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: in
 
     insert_with_progress(df,engine,batch_size)
 
-    # # Use pandas built-in batching via chunksize if batching is enabled
-    # df.to_sql(
-    #    index=False,               # Don't save the DataFrame index as a column
-    #    if_exists="append",        # Append to the table instead of replacing it
-    #    name=getenv("TABLE_NAME"), # Target table name in the database
-    #    con=engine,                # Database connection
-    #    method="multi",            # Insert using efficient multi-insert method
-    #    chunksize=batch_size if use_batches else None  # Control batching
-    # )
-
     print("Database populated successfully.")
 
 def add_test_row(filepath: str, engine, config: dict) -> None:
