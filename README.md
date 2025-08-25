@@ -124,17 +124,6 @@ echo "$USER:100000:65536" >> /etc/subgid
 
 ---
 
-### Enable PostGIS Extension
-
-If needed, you can manually enable PostGIS (only once):
-
-
-```bash
-podman exec -it postgis_container psql -U user -d $DATABASE_NAME -c "CREATE EXTENSION postgis;"
-```
-
----
-
 ### Start the Database
 
 ```bash
@@ -145,6 +134,17 @@ Verify it's running:
 
 ```bash
 podman ps
+```
+
+---
+
+### Enable PostGIS Extension
+
+If needed, you can manually enable PostGIS (only once):
+
+
+```bash
+podman exec -it postgis_container psql -U user -d $DATABASE_NAME -c "CREATE EXTENSION postgis;"
 ```
 
 ---
