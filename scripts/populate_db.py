@@ -146,6 +146,11 @@ def add_test_row(filepath: str, engine, config: dict) -> None:
         intersec_satfields = sorted(set(config['SATELLITE_FIELDS']).intersection(list(df.columns)) ,key=lambda x:config['SATELLITE_FIELDS'].index(x))
         df = df[intersec_satfields]
 
+    with engine.connect() as conn:
+        getSQLtable = pd.read_sql_query(text(f"""SELECT * FROM {getenv("TABLE_NAME")}"""), conn)
+        intersec_satfields = sorted(set(list(df.columns)).intersection(list(getSQLtable.columns)) ,key=lambda x:list(df.columns).index(x))
+        df = df[intersec_satfields]
+
     df = df[df['timestamp']==df['timestamp'].min()].head(1)
 
     df.loc[0,"timestamp"] = df.loc[0,"timestamp"] - 0.05 * df.loc[0,"timestamp"]
@@ -160,7 +165,7 @@ def add_test_row(filepath: str, engine, config: dict) -> None:
         chunksize=1               # Only one row
     )
 
-def return_test_row(filepath: str, config: dict) -> pd.core.frame.DataFrame:
+def return_test_row(filepath: str, engine, config: dict) -> pd.core.frame.DataFrame:
     """
     Loads a .pkl file and inserts only one row into the TABLE_NAME table.
     Useful for testing purposes.
@@ -177,7 +182,17 @@ def return_test_row(filepath: str, config: dict) -> pd.core.frame.DataFrame:
     df = pd.read_pickle(filepath).reset_index()
 
     # Keep only the satellite fields we're interested in and select the first row
-    df = df[config['SATELLITE_FIELDS']]
+    try:
+        df = df[config['SATELLITE_FIELDS']]
+    except:
+        df = df.reset_index()
+        intersec_satfields = sorted(set(config['SATELLITE_FIELDS']).intersection(list(df.columns)) ,key=lambda x:config['SATELLITE_FIELDS'].index(x))
+        df = df[intersec_satfields]
+
+    with engine.connect() as conn:
+        getSQLtable = pd.read_sql_query(text(f"""SELECT * FROM {getenv("TABLE_NAME")}"""), conn)
+        intersec_satfields = sorted(set(list(df.columns)).intersection(list(getSQLtable.columns)) ,key=lambda x:list(df.columns).index(x))
+        df = df[intersec_satfields]
 
     df = df[df['timestamp']==df['timestamp'].min()].head(1)
 
