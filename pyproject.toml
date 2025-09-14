@@ -18,6 +18,7 @@ python-dotenv = "^1.1.0"
 pandas = "^2.2.0"
 h11 = "^0.16.0"
 xarray = "^2025.4.0"
+netcdf4 = "^1.7.2"
 PyYAML = "^6.0.2"
 tqdm = "^4.67.1"
 
@@ -25,7 +26,11 @@ tqdm = "^4.67.1"
 black = "^24.3.0"
 pytest = "^7.4.3"
 flake8 = "^7.0.0"
+alembic = "^1.16.4"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[virtualenvs]
+create = true
