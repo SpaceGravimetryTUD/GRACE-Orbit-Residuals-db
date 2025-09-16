@@ -8,7 +8,9 @@ from tqdm import tqdm   # Library to make progress bars
 from pickle import Unpickler
 from pathlib import Path
 from src.machinery import inspect_df, getenv
+import warnings
 
+_PRIMARY_KEY_="id"
 
 def load_config(config_file: str = 'scripts/config.yaml') -> dict:
   """
@@ -72,8 +74,14 @@ def intersect_config_fields(df, config: dict = load_config()):
     try:
         df = df[config['SATELLITE_FIELDS']]
     except:
-        df = df.reset_index()
         intersec_satfields = sorted(set(config['SATELLITE_FIELDS']).intersection(list(df.columns)) ,key=lambda x:config['SATELLITE_FIELDS'].index(x))
+        
+        if len(set(df.columns) - set(config['SATELLITE_FIELDS'])) > 0:
+            warnings.warn("Fields " + ", ".join(set(df.columns) - set(config['SATELLITE_FIELDS'])) + " could not be found in `scripts/config.yaml`. These fields will be ignored.", UserWarning)
+        
+        if len(set(config['SATELLITE_FIELDS']) - set(df.columns)) > 0:
+            warnings.warn("Fields " + ", ".join(set(config['SATELLITE_FIELDS']) - set(df.columns)) + " stated in `scripts/config.yaml` but not found in uploaded data. These fields will be ignored.", UserWarning)
+        
         df = df[intersec_satfields]
 
     return df
@@ -86,14 +94,24 @@ def get_sql_columns(engine) -> list:
     except:
         with engine.connect() as conn:
             sqlcols = list(pd.read_sql_query(text(f"""SELECT * FROM {os.getenv("TABLE_NAME")}"""), conn).columns)
+
+
     return sqlcols
 
 def intersect_sqltable_fields(df, engine):
 
     with engine.connect() as conn:
         sql_columns = get_sql_columns(engine)
+        sql_columns.remove(_PRIMARY_KEY_)
+
         intersec_satfields = sorted(set(list(df.columns)).intersection(list(sql_columns)) ,key=lambda x:list(df.columns).index(x))
 
+        if len(set(df.columns) - set(sql_columns)) > 0:
+            warnings.warn("Fields " + ", ".join(set(df.columns) - set(sql_columns)) + " could not be found in SQL table `" + os.getenv("TABLE_NAME") + "`. These fields will be ignored.", UserWarning)
+        
+        if len(set(sql_columns) - set(df.columns)) > 0:
+            raise ValueError("Fields " + ", ".join(set(sql_columns) - set(df.columns)) + " required by SQL table `" + os.getenv("TABLE_NAME") + "`. Populating Database cannot proceed.")
+        
         df = df[intersec_satfields]
 
     return df
@@ -124,6 +142,9 @@ def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: in
             up = Unpickler(pbfd)
             df = up.load()
         print(f"Loaded {filepath}")
+
+    # make sure all columns (e.gh. timestamp) are defined as such
+    df = df.reset_index()
 
     # Try keeping only the satellite fields we're interested in. If does not succeed reset index to prevent first collumn from being dataframe index column
     
