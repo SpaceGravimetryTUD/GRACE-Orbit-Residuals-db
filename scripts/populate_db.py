@@ -77,10 +77,10 @@ def intersect_config_fields(df, config: dict = load_config()):
         intersec_satfields = sorted(set(config['SATELLITE_FIELDS']).intersection(list(df.columns)) ,key=lambda x:config['SATELLITE_FIELDS'].index(x))
         
         if len(set(df.columns) - set(config['SATELLITE_FIELDS'])) > 0:
-            warnings.warn("Fields " + ", ".join(set(df.columns) - set(config['SATELLITE_FIELDS'])) + " could not be found in `scripts/config.yaml`. These fields will be ignored.", UserWarning)
+            warnings.warn("Fields `" + "`, `".join(set(df.columns) - set(config['SATELLITE_FIELDS'])) + "` could not be found in `scripts/config.yaml`. These fields will be ignored.", UserWarning)
         
         if len(set(config['SATELLITE_FIELDS']) - set(df.columns)) > 0:
-            warnings.warn("Fields " + ", ".join(set(config['SATELLITE_FIELDS']) - set(df.columns)) + " stated in `scripts/config.yaml` but not found in uploaded data. These fields will be ignored.", UserWarning)
+            warnings.warn("Fields `" + "`, `".join(set(config['SATELLITE_FIELDS']) - set(df.columns)) + "` stated in `scripts/config.yaml` but not found in uploaded data. These fields will be ignored.", UserWarning)
         
         df = df[intersec_satfields]
 
@@ -95,24 +95,22 @@ def get_sql_columns(engine) -> list:
         with engine.connect() as conn:
             sqlcols = list(pd.read_sql_query(text(f"""SELECT * FROM {os.getenv("TABLE_NAME")}"""), conn).columns)
 
-
     return sqlcols
 
 def intersect_sqltable_fields(df, engine):
 
-    with engine.connect() as conn:
-        sql_columns = get_sql_columns(engine)
-        sql_columns.remove(_PRIMARY_KEY_)
+    sql_columns = get_sql_columns(engine)
+    sql_columns.remove(_PRIMARY_KEY_)
 
-        intersec_satfields = sorted(set(list(df.columns)).intersection(list(sql_columns)) ,key=lambda x:list(df.columns).index(x))
+    intersec_satfields = sorted(set(list(df.columns)).intersection(list(sql_columns)) ,key=lambda x:list(df.columns).index(x))
 
-        if len(set(df.columns) - set(sql_columns)) > 0:
-            warnings.warn("Fields " + ", ".join(set(df.columns) - set(sql_columns)) + " could not be found in SQL table `" + os.getenv("TABLE_NAME") + "`. These fields will be ignored.", UserWarning)
+    if len(set(df.columns) - set(sql_columns)) > 0:
+        warnings.warn("Fields `" + "`, `".join(set(df.columns) - set(sql_columns)) + "` could not be found in SQL table `" + os.getenv("TABLE_NAME") + "`. These fields will be ignored.", UserWarning)
         
-        if len(set(sql_columns) - set(df.columns)) > 0:
-            raise ValueError("Fields " + ", ".join(set(sql_columns) - set(df.columns)) + " required by SQL table `" + os.getenv("TABLE_NAME") + "`. Populating Database cannot proceed.")
-        
-        df = df[intersec_satfields]
+    if len(set(sql_columns) - set(df.columns)) > 0:
+        raise ValueError("Fields `" + "`, `".join(set(sql_columns) - set(df.columns)) + "` required by SQL table `" + os.getenv("TABLE_NAME") + "`. Populating Database cannot proceed.")
+       
+    df = df[intersec_satfields]
 
     return df
 
