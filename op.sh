@@ -43,7 +43,7 @@ do
   env) #operation: show the values of the variables in the .env file
     for i in $(cat $DIR/.env | sed 's:#.*::g' | sed '/^$/d' | awk -F= '{print $1}')
     do
-      eval "echo ${$i}"
+      eval 'echo '$i'=${'$i'}'
     done
   ;;
   stop|down) #operation: turn off the db; NOTICE that 'stop' and 'down' are different things!
