@@ -8,7 +8,7 @@ DIR=$(cd $(dirname $BASH_SOURCE);pwd)
 
 if [ ! -s $DIR/.env ]
 then
-  echo-red "ERROR: cannot find $DIR/.env file"
+  echo-red "ERROR: cannot find $DIR/.env file. One example of this file can be found in the README.md"
   exit 3
 fi
 
