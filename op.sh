@@ -80,7 +80,7 @@ do
     fi
   ;;
   -l) #operation: list tables
-    psql -l -p $EXTERNAL_PORT -h $DATABASE_HOSTNAME
+    psql -l -p $EXTERNAL_PORT -h $DATABASE_HOSTNAME -d $DATABASE_NAME -U $DATABASE_USER
   ;;
   run) #operation: run all following arguments and exit
     poetry run ${@:2}
