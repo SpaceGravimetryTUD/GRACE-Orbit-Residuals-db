@@ -52,12 +52,12 @@ This project sets up a scalable geospatial data pipeline using **PostgreSQL + Po
 
 # 🌍 Context & Background
 
-We work with high-frequency geospatial time-series data from the GRACE satellite mission, specifically Level-1B range-rate residuals derived from inter-satellite Ka-band observations. These residuals may contain unexploited high-frequency geophysical signals used for scientific applications.
+We work with high-frequency geospatial time-series data from the GRACE satellite mission, specifically Level-1B range-rate residuals derived from inter-satellite K-band observations. These residuals may contain unexploited high-frequency geophysical signals used for scientific applications.
 
 ## Key dataset characteristics:
 
 - **Temporal resolution**: 5-second intervals
-- **Spatial attributes**: Latitude, longitude, altitude for GRACE A & B
+- **Spatial attributes**: Latitude, longitude, altitude for GRACE-A & GRACE-B
 - **Data volume**: 2002–2017, approx. \~95 million records
 - **Target queries**: Time-span filtering, spatial bounding, and signal-based statistical analysis
 
@@ -72,8 +72,8 @@ This project targets Unix-based systems. If you're on Windows, install [WSL2](ht
 Install the following tools:
 
 - **Podman & Podman Compose**
-  - [Podman Install](https://podman.io/getting-started/installation)
-  - [Podman Compose Install](https://github.com/containers/podman-compose)
+    - [Podman Install](https://podman.io/getting-started/installation)
+    - [Podman Compose Install](https://github.com/containers/podman-compose)
 - **Python 3.10+**
 - **pip**
 - **[Poetry 2.x](https://python-poetry.org/docs/#installation)**
@@ -110,7 +110,7 @@ poetry -V
 
 ---
 
-## 2️⃣ Clone the Repository
+## Clone the Repository
 
 ```bash
 git clone https://github.com/SpaceGravimetryTUD/GRACE-Orbit-Residuals-db
@@ -125,14 +125,14 @@ git branch v1-flat-data-test
 
 ---
 
-##5️⃣ Environment Configuration
+## Environment Configuration
 
 Make sure to have a data directory where you store your data.
 
 > ⚠️ Security Note on Pickle Files
 > Warning: This application loads data using pandas.read_pickle(), which internally uses Python's pickle module.
-
-While this format is convenient for fast internal data loading, it is not secure against untrusted input.Never upload or load .pkl files from unverified or external sources, as they can execute arbitrary code on your system.
+>
+> While this format is convenient for fast internal data loading, it is not secure against untrusted input. Never upload or load .pkl files from unverified or external sources, as they can execute arbitrary code on your system.
 
 Create a `.env` file at the project root:
 
@@ -169,7 +169,8 @@ echo "$USER:100000:65536" >> /etc/subgid
 ```
 
 ---
-### 6️⃣ (Optional) Enable PostGIS Extension
+
+### (Optional) Enable PostGIS Extension
 
 
 If needed, you can manually enable PostGIS (only once):
@@ -202,25 +203,34 @@ podman ps
 
 ## Install Python Dependencies
 
+
 ```bash
 poetry install
 ```
 
 > If you get the error:
 
-> ```
+> ⚠️ ISSUE: Poetry doesn't like pyenv: removing it from PATH works. You case **source** the script `clean-pyenv-from-path.sh` to accomplish this:
+> 
+>```bash
+> . ./clean-pyenv-from-path.sh
+>```
+
+> ⚠️ ISSUE: If you get the error:
+>
+>```
 > Installing psycopg2 (2.9.10): Failed
 > 
 > PEP517 build of a dependency failed
-> 
-> Backend subprocess exited when trying to invoke get_requires_for_build_wheel
-> ```
+>
+>Backend subprocess exited when trying to invoke get_requires_for_build_wheel
+>```
 > 
 > Then:
-> 
-> ```
->  sudo apt install libpq-dev gcc
-> ```
+>
+>```
+>sudo apt install libpq-dev gcc
+>```
 
 From now on, run all Python commands via:
 
@@ -233,7 +243,7 @@ poetry run <your-command>
 
 ---
 
-### 7️⃣ Initialize the Database Schema with Alembic
+### Initialize the Database Schema with Alembic
 
 This project uses Alembic for database migrations. Initialize the schema:
 
@@ -257,7 +267,7 @@ Future Enhancement: The PostGIS system table issue could be resolved by implemen
 ---
 
 
-### 8️⃣ Load Sample Data
+### Load Sample Data
 This will create the tables and load initial data:
 
 ```bash
@@ -273,7 +283,7 @@ bashpodman exec -it postgis_container psql -U user -d $DATABASE_NAME -c "\d $TAB
 
 The variables $DATABASE_NAME and $TABLE_NAME are defined in .env.
 ---
-### 9️⃣ Insert & Query Example Data
+### Insert & Query Example Data
 
 Ensure `data/flat-data-test.pkl` exists:
 
