@@ -50,7 +50,7 @@ do
     CONTAINER_NAME=$(awk  '/container_name:/ {print $2}' $DIR/docker-compose.yml)
     if grep -q $CONTAINER_NAME <(podman ps --noheading  | awk '{print $NF'})
     then
-      podman-compose -f $DIR/docker-compose.yml $OP -d
+      podman-compose -f $DIR/docker-compose.yml $OP
     else
       echo-red "No container $CONTAINER_NAME currently running:"
       podman ps
@@ -63,7 +63,7 @@ do
       echo-red "Container $CONTAINER_NAME already running:"
       podman ps
     else
-      podman-compose -f $DIR/docker-compose.yml $OP -d
+      podman-compose -f $DIR/docker-compose.yml $OP $([ "$OP" ==  "up" ] && echo '-d')
     fi
   ;;
   ps) #operation: podman ps
