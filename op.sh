@@ -69,10 +69,18 @@ do
   ps) #operation: podman ps
     podman ps
   ;;
+  .pgpass) #operation: add an entry to access this db to the ~/.pgpass file
+    LINE="$DATABASE_HOSTNAME:$EXTERNAL_PORT:$DATABASE_NAME:$DATABASE_USER:$DATABASE_PASSWORD"
+    if grep -q "$LINE" ~/.pgpass
+    then
+      echo-red "NOTICE: file ~/.pgpass already contains the credentials for $DATABASE_HOSTNAME:$EXTERNAL_PORT/$DATABASE_NAME"
+    else
+      echo "$LINE" >> ~/.pgpass
+      chmod u=rw,go-rwx ~/.pgpass
+    fi
+  ;;
   -l) #operation: list tables
-    _USER=$(    awk  '/POSTGRES_USER:/     {print $2}' $DIR/docker-compose.yml)
-    _PASSWORD=$(awk  '/POSTGRES_PASSWORD:/ {print $2}' $DIR/docker-compose.yml)
-    psql -l -p $EXTERNAL_PORT -h 127.0.0.1 -U $_USER -W $_PASSWORD
+    psql -l -p $EXTERNAL_PORT -h $DATABASE_HOSTNAME
   ;;
   run) #operation: run all following arguments and exit
     poetry run ${@:2}
