@@ -1,3 +1,7 @@
+<!--
+
+#This style only renders in standard markdown, it does not in github markdown. The main motivation was to add numbering to the headings.
+
 <style>
 .titlesize{
   font-size: xx-large;
@@ -38,9 +42,9 @@ h4:before {
     counter-increment: h4;
     content: counter(h1) "." counter(h2) "." counter(h3) "." counter(h4) ". "
 }
-</style>
+</style> -->
 
-<p class="titlesize">GRACE Geospatial Data Processing Stack</p>
+# GRACE Geospatial Data Processing Stack
 
 This project sets up a scalable geospatial data pipeline using **PostgreSQL + PostGIS + TimescaleDB** , **SQLAlchemy**, and **Podman Compose**. It facilitates efficient ingestion, validation, and querying of high-frequency satellite data from the GRACE mission.
 
