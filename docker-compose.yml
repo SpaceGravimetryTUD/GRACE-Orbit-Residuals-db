@@ -1,3 +1,4 @@
+#NOTICE: the variables reference below (and others, see README.md) need to be defined in the .env file
 services:
   postgis_container:
     env_file: ".env"
@@ -5,9 +6,9 @@ services:
     container_name: postgis_container
     restart: always
     environment:
-      POSTGRES_DB: geospatial_db #must be in agreement with the value of the variable DATABASE_NAME defined in .env
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ${DATABASE_NAME}
+      POSTGRES_USER: ${DATABASE_USER}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD}
     ports:
       - "${EXTERNAL_PORT}:5432"
     volumes:
@@ -16,6 +17,9 @@ services:
     command: ["postgres"]
     platform: linux/amd64  # 👈 force amd64
 
+networks:
+  outside:
+    external: true
 
 volumes:
   postgres_data:
