@@ -70,7 +70,9 @@ do
     podman ps
   ;;
   -l) #operation: list tables
-    psql -l -p $EXTERNAL_PORT -h 127.0.0.1 -U user
+    _USER=$(    awk  '/POSTGRES_USER:/     {print $2}' $DIR/docker-compose.yml)
+    _PASSWORD=$(awk  '/POSTGRES_PASSWORD:/ {print $2}' $DIR/docker-compose.yml)
+    psql -l -p $EXTERNAL_PORT -h 127.0.0.1 -U $_USER -W $_PASSWORD
   ;;
   run) #operation: run all following arguments and exit
     poetry run ${@:2}
