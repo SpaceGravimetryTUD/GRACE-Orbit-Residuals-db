@@ -46,11 +46,25 @@ do
       eval "echo ${$i}"
     done
   ;;
-  down) #operation: turn off the db
-    podman-compose down
+  stop|down) #operation: turn off the db; NOTICE that 'stop' and 'down' are different things!
+    CONTAINER_NAME=$(awk  '/container_name:/ {print $2}' $DIR/docker-compose.yml)
+    if grep -q $CONTAINER_NAME <(podman ps --noheading  | awk '{print $NF'})
+    then
+      podman-compose -f $DIR/docker-compose.yml $OP -d
+    else
+      echo-red "No container $CONTAINER_NAME currently running:"
+      podman ps
+    fi
   ;;
-  up) #operation: turn on the db
-    podman-compose -f docker-compose.yml up -d
+  start|up) #operation: turn on the db; NOTICE that 'start' and 'up' are different things!
+    CONTAINER_NAME=$(awk  '/container_name:/ {print $2}' $DIR/docker-compose.yml)
+    if grep -q $CONTAINER_NAME <(podman ps --noheading  | awk '{print $NF'})
+    then
+      echo-red "Container $CONTAINER_NAME already running:"
+      podman ps
+    else
+      podman-compose -f $DIR/docker-compose.yml $OP -d
+    fi
   ;;
   ps) #operation: podman ps
     podman ps
