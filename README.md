@@ -142,8 +142,11 @@ Create a `.env` file at the project root:
 # .env
 TABLE_NAME=kbr_gravimetry_v2
 EXTERNAL_PORT=XXXX #Replace with XXXX with available external port; in grace-cube.lr.tudelft.nl, port 3306 is open
+DATABASE_USER=user
+DATABASE_PASSWORD=password
+DATABASE_HOSTNAME=localhost
 DATABASE_NAME=geospatial_db
-DATABASE_URL="postgresql://user:password@localhost:5432/${DATABASE_NAME}"
+DATABASE_URL="postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOSTNAME}:${EXTERNAL_PORT}/${DATABASE_NAME}"
 DATA_PATH=/mnt/GRACEcube/Data/L1B_res/CSR_latlon_data/flat-data/v2/flat-data-2003.v2.pkl
 ```
 
