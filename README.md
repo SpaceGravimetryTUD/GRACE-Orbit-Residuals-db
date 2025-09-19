@@ -108,6 +108,8 @@ pipx install poetry
 poetry -V
 ```
 
+These steps can be run with `op.sh install`.
+
 ---
 
 ## Clone the Repository
@@ -151,6 +153,8 @@ To load environmental variables in `.env` run:
 source .env
 ```
 
+This is alwways done when the `op.sh` script is run.
+
 ---
 
 ## Update `/etc/containers/registries.conf`
@@ -179,11 +183,7 @@ If needed, you can manually enable PostGIS (only once):
 CREATE EXTENSION postgis;
 ```
 
----
-
-### 7️⃣ Initialize the Database Schema with Alembic
-
-This project uses Alembic for database migrations. Initialize the schema:
+These steps can be run with `op.sh postgis`.
 
 ---
 
@@ -193,12 +193,23 @@ This project uses Alembic for database migrations. Initialize the schema:
 podman-compose -f docker-compose.yml up -d
 ```
 
+or 
+
+```bash
+./op.sh up
+```
+
 Verify it's running:
 
 ```bash
 podman ps
 ```
 
+or 
+
+```bash
+./op.sh ps
+```
 ---
 
 ## Install Python Dependencies
@@ -208,7 +219,12 @@ podman ps
 poetry install
 ```
 
-> If you get the error:
+or:
+
+```bash
+./op.sh poetry-install
+```
+
 
 > ⚠️ ISSUE: Poetry doesn't like pyenv: removing it from PATH works. You case **source** the script `clean-pyenv-from-path.sh` to accomplish this:
 > 
@@ -238,7 +254,11 @@ From now on, run all Python commands via:
 poetry run <your-command>
 ```
 
-> ⚠️ ISSUE: Poetry doesn't like pyenv: removing it from PATH works
+or:
+
+```bash
+./op.sh run <your-command>
+```
 
 
 ---
