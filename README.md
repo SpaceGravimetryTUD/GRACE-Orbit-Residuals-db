@@ -213,6 +213,24 @@ or
 ```bash
 ./op.sh ps
 ```
+
+---
+
+## Create credentials for easy database access
+
+The `~/.pgpass` can hold the credentials for accessing the database with various CLI tools, such as `psql`. To create an entry that allows passwordless access:
+
+```bash
+./op.sh .pgpass
+```
+
+Check access with:
+
+```bash
+./op.sh -l
+```
+
+
 ---
 
 ## Install Python Dependencies
