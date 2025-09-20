@@ -117,7 +117,7 @@ do
   load) #operation: load the files given by the following arguments and exit
     for i in "${@:2}"
     do
-      poetry run python scripts/init_db.py --use_batches --filepath "$i"
+      poetry run python scripts/init_db.py --populate --use_batches --filepath "$i"
     done
     exit
   ;;
