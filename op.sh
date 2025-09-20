@@ -82,6 +82,9 @@ do
   -l) #operation: list tables
     psql -l -p $EXTERNAL_PORT -h $DATABASE_HOSTNAME -d $DATABASE_NAME -U $DATABASE_USER
   ;;
+  poetry-install) #operation: Install Python Dependencies
+    poetry install
+  ;;
   run) #operation: run all following arguments and exit
     poetry run ${@:2}
     exit
