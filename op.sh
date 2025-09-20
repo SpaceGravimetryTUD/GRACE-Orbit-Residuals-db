@@ -90,22 +90,22 @@ do
     exit
   ;;
   alembic-init) #operation: initialize the Database Schema with Alembic
-    if [ -z "$(find $DIR/alembiv/versions/ -type f -name *_initial_migration.py)" ]
+    if [ -z "$(find $DIR/alembic/versions/ -type f -name *_initial_migration.py)" ]
     then
       poetry run alembic revision --autogenerate -m "Initial migration"
     else
-      echo-red "Initial migration already done, since there are migration scripts in $DIR/alembiv/versions/:"
-      ls -la $DIR/alembiv/versions/
+      echo-red "Initial migration already done, since there are migration scripts in $DIR/alembic/versions/:"
+      ls -la $DIR/alembic/versions/
     fi
   ;;
-  alembic-reinit) #operation: delete all files in ./alembiv/versions/ and initialize the Database Schema with Alembic
+  alembic-reinit) #operation: delete all files in ./alembic/versions/ and initialize the Database Schema with Alembic
     SINK=$DIR/alembic/versions.$(prinf "%02d" $(( $(find $DIR/alembic -maxdepth 1 -type d -name versions.\* | wc -l) +1 )))
-    echo-red "WARNING: backup $DIR/alembiv/versions to $SINK and re-initialize database schema with alembic? [Y/n]"
+    echo-red "WARNING: backup $DIR/alembic/versions to $SINK and re-initialize database schema with alembic? [Y/n]"
     read -n1 ANSWER
     if [ "$ANSWER" == "Y" ] || [ "$ANSWER" == "y" ]
     then
-      mv $DIR/alembiv/versions $SINK
-      mkdir $DIR/alembiv/versions
+      mv $DIR/alembic/versions $SINK
+      mkdir $DIR/alembic/versions
       $BASH_SOURCE alembic-init
     else
       echo "Operation cancelled."
