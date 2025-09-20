@@ -101,7 +101,7 @@ do
   alembic-reinit) #operation: delete all files in ./alembic/versions/ and initialize the Database Schema with Alembic
     SINK=$DIR/alembic/versions.$(printf "%02d" $(( $(find $DIR/alembic -maxdepth 1 -type d -name versions.\* | wc -l) +1 )))
     echo-red "WARNING: backup $DIR/alembic/versions to $SINK and re-initialize database schema with alembic? [Y/n]"
-    read -n1 ANSWER
+    read -s -n1 ANSWER
     if [ "$ANSWER" == "Y" ] || [ "$ANSWER" == "y" ]
     then
       mv $DIR/alembic/versions $SINK
