@@ -111,6 +111,9 @@ do
       echo "Operation cancelled."
     fi
   ;;
+  alembic-upgrade) #operation: Apply the migration
+    poetry run alembic upgrade head
+  ;;
   load) #operation: load the files given by the following arguments and exit
     for i in "${@:2}"
     do
