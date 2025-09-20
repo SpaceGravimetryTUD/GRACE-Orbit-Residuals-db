@@ -179,7 +179,6 @@ echo "$USER:100000:65536" >> /etc/subgid
 
 ### (Optional) Enable PostGIS Extension
 
-
 If needed, you can manually enable PostGIS (only once):
 
 ```sql
@@ -230,11 +229,24 @@ Check access with:
 ./op.sh -l
 ```
 
+You should get something like:
+
+```
+                            List of databases
+     Name      | Owner | Encoding | Collate |  Ctype  | Access privileges
+---------------+-------+----------+---------+---------+-------------------
+ geospatial_db | user  | UTF8     | C.UTF-8 | C.UTF-8 |
+ postgres      | user  | UTF8     | C.UTF-8 | C.UTF-8 |
+ template0     | user  | UTF8     | C.UTF-8 | C.UTF-8 | =c/user          +
+               |       |          |         |         | user=CTc/user
+ template1     | user  | UTF8     | C.UTF-8 | C.UTF-8 | =c/user          +
+               |       |          |         |         | user=CTc/user
+(4 rows)
+```
 
 ---
 
 ## Install Python Dependencies
-
 
 ```bash
 poetry install
@@ -245,7 +257,6 @@ or:
 ```bash
 ./op.sh poetry-install
 ```
-
 
 > ⚠️ ISSUE: Poetry doesn't like pyenv: removing it from PATH works. You case **source** the script `clean-pyenv-from-path.sh` to accomplish this:
 > 
@@ -281,45 +292,97 @@ or:
 ./op.sh run <your-command>
 ```
 
-
 ---
 
-### Initialize the Database Schema with Alembic
+## Initialize the Database Schema with Alembic
 
-This project uses Alembic for database migrations. Initialize the schema:
+This project uses [Alembic](https://alembic.sqlalchemy.org/en/latest/) for [database migration](https://en.wikipedia.org/wiki/Data_migration#Database_migration). 
+
+To initialize the schema:
 
 ```bash
 # Generate initial migration
 poetry run alembic revision --autogenerate -m "Initial migration"
-
-# ⚠️ IMPORTANT: Edit the generated migration file
-# The migration may include `op.drop_table('spatial_ref_sys')` due to PostGIS system tables
-# Comment out or remove any lines that drop PostGIS system tables like:
-# - spatial_ref_sys
-# - geography_columns  
-# - geometry_columns
 ```
 
-# Apply the migration
+This step can be run with `op.sh alembic-init`.
+
+You should get something like:
+
+```
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.autogenerate.compare] Detected added table 'kbr_gravimetry_v2'
+INFO  [alembic.autogenerate.compare] Detected added index 'ix_kbr_gravimetry_v2_timestamp' on '('timestamp',)'
+  Generating /home/teixeira/projects/GRACE-Orbit-Residuals-db/alembic/versions/519a7da74bee_initial_migration.py ...  done
+```
+
+If you get the following error:
+
+```
+ERROR [alembic.util.messaging] Target database is not up to date.
+  FAILED: Target database is not up to date.
+```
+
+... it's because this command was already run (and the result added to the repository). To forcefully re-initialize the schema, you need to delete (or backup) all migration files with name `./alembic/versions/*_initial_migration.py`.
+
+This can be achieved with `op.sh alembic-reinit`, which will also call `op.sh alembic-init`.
+
+> ⚠️ IMPORTANT: Edit the generated migration file in `./alembic/versions/`.
+
+>
+> The migration may include `op.drop_table('spatial_ref_sys')` due to PostGIS system tables.
+> Comment out or remove any lines that drop PostGIS system tables like:
+> - spatial_ref_sys
+> - geography_columns  
+> - geometry_columns
+> 
+> 
+Future Enhancement: The PostGIS system table issue could be resolved by implementing schema-based separation or improving the Alembic configuration to automatically exclude PostGIS system tables.
+
+## Apply the migration
+
 ```bash
 poetry run alembic upgrade head
 ```
-Future Enhancement: The PostGIS system table issue could be resolved by implementing schema-based separation or improving the Alembic configuration to automatically exclude PostGIS system tables.
+
+or:
+
+```bash
+./op.sh alembic-upgrade
+```
+
+You should get something like:
+
+```
+INFO  [alembic.runtime.migration] Context impl PostgresqlImpl.
+INFO  [alembic.runtime.migration] Will assume transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 519a7da74bee, Initial migration
+```
+
 ---
 
+## Load Sample Data
 
-### Load Sample Data
 This will create the tables and load initial data:
 
 ```bash
 poetry run python scripts/init_db.py --use_batches --filepath <path to flat data file>
 ```
-If you get the error:
-`Failed to initialize database: No module named 'src'`
-then you are in the wrong directory.
-# Optional: verify schema from inside the container:
+
+or:
+
 ```bash
-bashpodman exec -it postgis_container psql -U user -d $DATABASE_NAME -c "\d $TABLE_NAME;"
+./op.sh load <path to flat data file 1> [ <path to flat data file 2> [ ... <path to flat data file N> ]]
+```
+
+
+If you get the error: `Failed to initialize database: No module named 'src'` then you are in the wrong directory.
+
+## Optional: verify schema from inside the container:
+
+```bash
+podman exec -it postgis_container psql -U user -d $DATABASE_NAME -c "\d $TABLE_NAME;"
 ```
 
 The variables $DATABASE_NAME and $TABLE_NAME are defined in .env.
