@@ -122,10 +122,12 @@ do
     exit
   ;;
   check-schema) #operation: verify schema from inside the container
-    podman exec -it postgis_container psql -U user -d $DATABASE_NAME -c "\d $TABLE_NAME;"
+    _CONTAINER_NAME=$(awk  '/container_name:/ {print $2}' $DIR/docker-compose.yml)
+    podman exec -it $_CONTAINER_NAME psql -p $EXTERNAL_PORT -h $DATABASE_HOSTNAME -d $DATABASE_NAME -U $DATABASE_USER -c "\d $TABLE_NAME;"
   ;;
   postgis) #operation: enable PostGIS
-    podman exec -it postgis_container psql -U user -d $DATABASE_NAME -c "CREATE EXTENSION postgis;"
+    _CONTAINER_NAME=$(awk  '/container_name:/ {print $2}' $DIR/docker-compose.yml)
+    podman exec -it $_CONTAINER_NAME psql -p $EXTERNAL_PORT -h $DATABASE_HOSTNAME -d $DATABASE_NAME -U $DATABASE_USER -c "CREATE EXTENSION postgis;"
   ;;
   test-query) #operation: run a simple query
     poetry run python scripts/space_time_query.py
