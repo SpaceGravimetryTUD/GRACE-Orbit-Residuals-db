@@ -89,6 +89,28 @@ do
     poetry run ${@:2}
     exit
   ;;
+  alembic-init) #operation: initialize the Database Schema with Alembic
+    if [ -z "$(find $DIR/alembiv/versions/ -type f -name *_initial_migration.py)" ]
+    then
+      poetry run alembic revision --autogenerate -m "Initial migration"
+    else
+      echo-red "Initial migration already done, since there are migration scripts in $DIR/alembiv/versions/:"
+      ls -la $DIR/alembiv/versions/
+    fi
+  ;;
+  alembic-reinit) #operation: delete all files in ./alembiv/versions/ and initialize the Database Schema with Alembic
+    SINK=$DIR/alembic/versions.$(prinf "%02d" $(( $(find $DIR/alembic -maxdepth 1 -type d -name versions.\* | wc -l) +1 )))
+    echo-red "WARNING: backup $DIR/alembiv/versions to $SINK and re-initialize database schema with alembic? [Y/n]"
+    read -n1 ANSWER
+    if [ "$ANSWER" == "Y" ] || [ "$ANSWER" == "y" ]
+    then
+      mv $DIR/alembiv/versions $SINK
+      mkdir $DIR/alembiv/versions
+      $BASH_SOURCE alembic-init
+    else
+      echo "Operation cancelled."
+    fi
+  ;;
   load) #operation: load the files given by the following arguments and exit
     for i in "${@:2}"
     do
