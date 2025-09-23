@@ -958,7 +958,6 @@ files = [
 ]
 
 [[package]]
-
 name = "pyyaml"
 version = "6.0.2"
 description = "YAML parser and emitter for Python"
@@ -1264,8 +1263,6 @@ files = [
     {file = "typing_extensions-4.13.2.tar.gz", hash = "sha256:e6c81219bd689f51865d9e372991c540bda33a0379d5573cddb9a3a23f7caaef"},
 ]
 
-markers = {dev = "python_version == \"3.10\""}
-
 [[package]]
 name = "tzdata"
 version = "2025.2"
@@ -1327,5 +1324,4 @@ viz = ["cartopy", "matplotlib", "nc-time-axis", "seaborn"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "a0b80b4bc401fa9780c6cac8037e591b3829fe24e135cec200e6fe26179c2853"
-
+content-hash = "b3b7030f2a886ac9976ab2bff46708c866a787f73ef3cad88ff40d6a4f8209f2"
