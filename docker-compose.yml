@@ -17,9 +17,9 @@ services:
     command: ["postgres"]
     platform: linux/amd64  # 👈 force amd64
 
-networks:
-  outside:
-    external: true
+      #networks:
+      #outside:
+      #external: true
 
 volumes:
   postgres_data:
