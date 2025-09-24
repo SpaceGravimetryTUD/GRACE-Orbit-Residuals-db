@@ -3,6 +3,10 @@
 function echo-red(){
   echo $'\e[91m'"$@"$'\e[0m'
 }
+function is-distro(){
+  UNAME=$(uname -a)
+  [[ ! "$UNAME" == "${UNAME/$1}" ]]
+}
 
 DIR=$(cd $(dirname $BASH_SOURCE);pwd)
 
@@ -41,8 +45,17 @@ do
   ;;
   install) #operation: install necessary software
     #get packages
-    sudo apt-get install postgresql-client-common postgresql-client podman pipx
-    pip3 install podman-compose
+    if is-distro Ubuntu
+    then
+      sudo apt install postgresql-client-common postgresql-client podman pipx
+      python3 -m pip install podman podman-compose
+    fi
+    if is-distro Darwin
+    then
+      brew install postgresql podman-desktop podman-compose pipx
+      echo-red "NOTICE: you need to start podman-desktop manually and install the podman engine (which can be done through podman-desktop)"
+    fi
+
     #Check
     podman-compose -v
     pipx ensurepath
