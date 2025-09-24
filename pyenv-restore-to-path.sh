@@ -1,0 +1,23 @@
+#!/bin/bash -ue
+
+STRING=.pyenv
+
+#check if this script was sourced (https://stackoverflow.com/a/28776166)
+if (return 0 2>/dev/null)
+then
+  if grep -q $STRING  <(echo $PATH)
+  then
+    echo "NOTICE: PATH already contains '$STRING'"
+  else
+    echo "=== Before:"
+    echo $PATH | awk -F: '{for(i=1; i<=NF; i++) {printf("%s\n",$i)}}'
+
+    export PATH="$HOME/.pyenv/shims:${PATH}"
+
+    echo "=== After:"
+    echo $PATH | awk -F: '{for(i=1; i<=NF; i++) {printf("%s\n",$i)}}'
+  fi
+else
+  echo "ERROR: this script needs to be sourced"
+  exit 3
+fi
