@@ -8,8 +8,18 @@ DIR=$(cd $(dirname $BASH_SOURCE);pwd)
 
 if [ ! -s $DIR/.env ]
 then
-  echo-red "ERROR: cannot find $DIR/.env file. One example of this file can be found in the README.md"
-  exit 3
+  echo-red "WARNING: cannot find $DIR/.env file. Created a file with default values. Edit this file if needed."
+  echo '# .env
+TABLE_NAME=kbr_gravimetry_v2
+EXTERNAL_PORT=5432
+DATABASE_USER=user
+DATABASE_PASSWORD=password
+DATABASE_HOSTNAME=localhost
+DATABASE_NAME=geospatial_db
+DATABASE_URL="postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOSTNAME}:${EXTERNAL_PORT}/${DATABASE_NAME}"
+TEST_DATA_PATH=./test-data.pkl' > $DIR/.env
+  echo-red "NOTICE: conents of $DIR/.env file are:"
+  cat $DIR/.env
 fi
 
 source $DIR/.env
