@@ -18,7 +18,7 @@ def clear_test_row(engine):
     test_file = getenv("DATA_PATH")  # e.g., data/flat-data-test.pkl
     assert test_file and os.path.exists(test_file), "Missing or invalid DATA_PATH"
 
-    test_row = return_test_row(test_file, load_config())
+    test_row = return_test_row(test_file, engine, load_config())
 
     test_timestamp = float(test_row.loc[0, 'timestamp'])  # for example: corresponds to 2002-04-01 in epoch seconds
     yield
