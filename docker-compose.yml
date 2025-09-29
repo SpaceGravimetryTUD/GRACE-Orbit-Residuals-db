@@ -1,19 +1,22 @@
 services:
   postgis_container:
-    image: docker.io/timescale/timescaledb-ha:pg14-oss-latest
+    env_file: ".env"
+    image: timescale/timescaledb-ha:pg14-latest   # NOT the -oss- tag
     container_name: postgis_container
     restart: always
     environment:
-      POSTGRES_DB: geospatial_db
+      POSTGRES_DB: geospatial_db #must be in agreement with the value of the variable DATABASE_NAME defined in .env
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
+      TIMESCALEDB_TELEMETRY: 'off'        # optional
+      TIMESCALEDB_LICENSE: 'timescale'    # enable free community features
+
     ports:
-      - "5432:5432"
+      - "${EXTERNAL_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./scripts/clean_up.sh:/docker-entrypoint-initdb.d/clean_up.sh
     command: ["postgres"]
-    platform: linux/amd64  # 👈 force amd64
+    platform: linux/amd64  # force amd64
 
 
 volumes:
