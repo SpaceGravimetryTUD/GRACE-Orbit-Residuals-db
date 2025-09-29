@@ -1,6 +1,6 @@
 import argparse         # Library for parsing command-line arguments
 import pandas as pd     # Library for handling tabular data (tables like Excel)
-from sqlalchemy import create_engine, text  # Library for talking to databases
+from sqlalchemy import create_engine, text, inspect  # Library for talking to databases
 import os               # Library for system operations, like reading environment variables
 import sys
 import yaml             # Library for reading YAML-formated files
@@ -8,7 +8,9 @@ from tqdm import tqdm   # Library to make progress bars
 from pickle import Unpickler
 from pathlib import Path
 from src.machinery import inspect_df, getenv
+import warnings
 
+_PRIMARY_KEY_="id"
 
 def load_config(config_file: str = 'scripts/config.yaml') -> dict:
   """
@@ -65,6 +67,54 @@ def insert_with_progress(df,engine,chunksize):
             )
             pbar.update(chunksize)
 
+
+def intersect_config_fields(df, config: dict = load_config()):
+
+    # Try keeping only the satellite fields we're interested in. If does not succeed reset index to prevent first collumn from being dataframe index column
+    try:
+        df = df[config['SATELLITE_FIELDS']]
+    except:
+        intersec_satfields = sorted(set(config['SATELLITE_FIELDS']).intersection(list(df.columns)) ,key=lambda x:config['SATELLITE_FIELDS'].index(x))
+        
+        if len(set(df.columns) - set(config['SATELLITE_FIELDS'])) > 0:
+            warnings.warn("Fields `" + "`, `".join(set(df.columns) - set(config['SATELLITE_FIELDS'])) + "` could not be found in `scripts/config.yaml`. These fields will be ignored.", UserWarning)
+        
+        if len(set(config['SATELLITE_FIELDS']) - set(df.columns)) > 0:
+            warnings.warn("Fields `" + "`, `".join(set(config['SATELLITE_FIELDS']) - set(df.columns)) + "` stated in `scripts/config.yaml` but not found in uploaded data. These fields will be ignored.", UserWarning)
+        
+        df = df[intersec_satfields]
+
+    return df
+
+def get_sql_columns(engine) -> list:
+
+    try:
+        inspector = inspect(engine)
+        sqlcols = [col["name"] for col in inspector.get_columns(os.getenv("TABLE_NAME"))]
+    except:
+        with engine.connect() as conn:
+            sqlcols = list(pd.read_sql_query(text(f"""SELECT * FROM {os.getenv("TABLE_NAME")}"""), conn).columns)
+
+    return sqlcols
+
+def intersect_sqltable_fields(df, engine):
+
+    sql_columns = get_sql_columns(engine)
+    sql_columns.remove(_PRIMARY_KEY_)
+
+    intersec_satfields = sorted(set(list(df.columns)).intersection(list(sql_columns)) ,key=lambda x:list(df.columns).index(x))
+
+    if len(set(df.columns) - set(sql_columns)) > 0:
+        warnings.warn("Fields `" + "`, `".join(set(df.columns) - set(sql_columns)) + "` could not be found in SQL table `" + os.getenv("TABLE_NAME") + "`. These fields will be ignored.", UserWarning)
+        
+    if len(set(sql_columns) - set(df.columns)) > 0:
+        raise ValueError("Fields `" + "`, `".join(set(sql_columns) - set(df.columns)) + "` required by SQL table `" + os.getenv("TABLE_NAME") + "`. Populating Database cannot proceed.")
+       
+    df = df[intersec_satfields]
+
+    return df
+
+
 def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: int = 1000, config: dict = load_config()) -> None:
     """
     Loads a .pkl file and populates the TABLE_NAME table in the database.
@@ -91,18 +141,14 @@ def populate_db(filepath: str, engine, use_batches: bool = False, batch_size: in
             df = up.load()
         print(f"Loaded {filepath}")
 
-    # Try keeping only the satellite fields we're interested in. If does not succeed reset index to prevent first collumn from being dataframe index column
-    try:
-        df = df[config['SATELLITE_FIELDS']]
-    except:
-        df = df.reset_index()
-        intersec_satfields = sorted(set(config['SATELLITE_FIELDS']).intersection(list(df.columns)) ,key=lambda x:config['SATELLITE_FIELDS'].index(x))
-        df = df[intersec_satfields]
+    # make sure all columns (e.gh. timestamp) are defined as such
+    df = df.reset_index()
 
-    with engine.connect() as conn:
-        getSQLtable = pd.read_sql_query(text(f"""SELECT * FROM {getenv("TABLE_NAME")}"""), conn)
-        intersec_satfields = sorted(set(list(df.columns)).intersection(list(getSQLtable.columns)) ,key=lambda x:list(df.columns).index(x))
-        df = df[intersec_satfields]
+    # Try keeping only the satellite fields we're interested in. If does not succeed reset index to prevent first collumn from being dataframe index column
+    
+    df = intersect_config_fields(df, config)
+
+    df = intersect_sqltable_fields(df, engine)
 
     inspect_df(df)
 
@@ -129,12 +175,9 @@ def add_test_row(filepath: str, engine, config: dict) -> None:
     df = pd.read_pickle(filepath).reset_index()
 
     # Keep only the satellite fields we're interested in and select the first row
-    try:
-        df = df[config['SATELLITE_FIELDS']]
-    except:
-        df = df.reset_index()
-        intersec_satfields = sorted(set(config['SATELLITE_FIELDS']).intersection(list(df.columns)) ,key=lambda x:config['SATELLITE_FIELDS'].index(x))
-        df = df[intersec_satfields]
+    df = intersect_config_fields(df, config)
+
+    df = intersect_sqltable_fields(df, engine)
 
     df = df[df['timestamp']==df['timestamp'].min()].head(1)
 
@@ -150,7 +193,7 @@ def add_test_row(filepath: str, engine, config: dict) -> None:
         chunksize=1               # Only one row
     )
 
-def return_test_row(filepath: str, config: dict) -> pd.core.frame.DataFrame:
+def return_test_row(filepath: str, engine, config: dict) -> pd.core.frame.DataFrame:
     """
     Loads a .pkl file and inserts only one row into the TABLE_NAME table.
     Useful for testing purposes.
@@ -167,7 +210,9 @@ def return_test_row(filepath: str, config: dict) -> pd.core.frame.DataFrame:
     df = pd.read_pickle(filepath).reset_index()
 
     # Keep only the satellite fields we're interested in and select the first row
-    df = df[config['SATELLITE_FIELDS']]
+    df = intersect_config_fields(df, config)
+
+    df = intersect_sqltable_fields(df, engine)
 
     df = df[df['timestamp']==df['timestamp'].min()].head(1)
 
