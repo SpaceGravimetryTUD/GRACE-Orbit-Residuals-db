@@ -87,14 +87,27 @@ def main():
     parser.add_argument("--output_format", type=str, choices=['csv', 'netcdf'], help="Output format (csv or netcdf)")
     args = parser.parse_args()
 
-    if args.start_time and args.end_time and args.polygon:
+    if args.start_time:
         start_time = pd.to_datetime(args.start_time)
-        end_time = pd.to_datetime(args.end_time)
-        polygon_coordinates = [(float(lon), float(lat)) for lon, lat in (pair.split() for pair in args.polygon.split(","))]
+        st_print = " from " + args.start_time
     else:
-        print("\u26a0\ufe0f No parameters provided, using default small polygon for test.")
         start_time = pd.to_datetime("2010-02-28T22:00:00")
+        st_print = ""
+    
+    if args.end_time:
+        end_time = pd.to_datetime(args.end_time)
+        et_print = " up to " + args.end_time
+    else:
         end_time = pd.to_datetime("2012-10-01T00:00:00")
+        et_print = ""
+    
+    if args.polygon:
+        polygon_coordinates = [(float(lon), float(lat)) for lon, lat in (pair.split() for pair in args.polygon.split(","))]
+        pc_min = (float(min([pair[0] for pair in polygon_coordinates])), float(min([pair[1] for pair in polygon_coordinates])))
+        pc_max = (float(max([pair[0] for pair in polygon_coordinates])), float(max([pair[1] for pair in polygon_coordinates])))
+        pc_print = " ranging the coordinates " + str(pc_min) + " to " + str(pc_max)
+
+    else:
         polygon_coordinates = [
             (71.44, 20.25),
             (71.44, 20.91),
@@ -102,6 +115,14 @@ def main():
             (71.48, 20.25),
             (71.44, 20.25)
         ]
+        pc_print = " using default small polygon for test."
+
+
+    if args.start_time or args.end_time or args.polygon:
+        print(str("\u26a0\ufe0f Filtering data" + st_print + et_print + pc_print + "."))
+    else:
+        print("\u26a0\ufe0f No parameters provided, using default small polygon for test.")
+        
 
     print("\n--- Time Filter Only ---")
     df_time = query_satellite_data_by_time(start_time, end_time)
