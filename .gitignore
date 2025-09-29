@@ -1,7 +1,11 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
+
+# Compiled Python
+__pycache__/
 *.py[cod]
 *$py.class
+*.cpython-*.pyc
 
 # Virtual environment
 venv/
@@ -29,7 +33,6 @@ MANIFEST
 # Pip and Poetry files
 pip-log.txt
 pip-delete-this-directory.txt
-poetry.lock
 
 # Pyenv
 .python-version
@@ -71,30 +74,6 @@ hypothesis/
 # MyPy
 .mypy_cache/
 
-# Django stuff:
-*.sqlite3
-db.sqlite3
-__pycache__/
-
-# Flask stuff:
-instance/
-.webassets-cache
-
-# Celery
-celerybeat-schedule
-celerybeat.pid
-
-# Scrapy
-.scrapy
-
-# Sphinx documentation
-docs/_build/
-
-# PyInstaller
-*.spec
-dist/
-build/
-
 # macOS files
 .DS_Store
 
@@ -108,3 +87,9 @@ docker-compose.override.yml
 
 # Data
 data/
+rsyncf.list
+
+# Output
+*.nc
+*.csv
+

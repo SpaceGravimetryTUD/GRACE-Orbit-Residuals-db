@@ -21,8 +21,8 @@ def check_polygon_validity(polygon_coordinates: list) -> bool:
         raise ValueError("The first and last points must be the same to close the polygon.")
 
     for lon, lat in polygon_coordinates:
-        if not (-180 <= lon <= 180):
-            raise ValueError(f"Invalid longitude {lon}. Must be between -180 and 180.")
+        if not (-180 <= lon <= 180) and not (0 <= lon <= 360):
+            raise ValueError(f"Invalid longitude {lon}. Must be between -180 and 180 or between 0 and 360..")
         if not (-90 <= lat <= 90):
             raise ValueError(f"Invalid latitude {lat}. Must be between -90 and 90.")
 
