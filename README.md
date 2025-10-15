@@ -19,6 +19,15 @@ We work with high-frequency geospatial time-series data from the GRACE satellite
 
 ## 🚀 Quick Start
 
+### 📋 Setup Overview
+
+This setup involves the following key steps:
+1. **Install Prerequisites** (Podman, Poetry, etc.)
+2. **Initialize Podman Machine** (macOS/Windows only)
+3. **Clone Repository** and configure environment
+4. **Start Database Containers** with Podman Compose
+5. **Install Python Dependencies** and run setup scripts
+
 ### Prerequisites
 
 This project targets Unix-based systems. If you're on Windows, install [WSL2](https://learn.microsoft.com/en-us/windows/wsl/install) and proceed as if on Ubuntu.
@@ -35,6 +44,10 @@ Install the following tools:
 > 🔐 **Security Note**: Podman is recommended over Docker for production due to rootless container support.
 
 > 📅 **Docker Compatibility**: You can also use Docker for development or local testing if it's already installed on your system. Podman supports Docker CLI syntax, so most `docker` and `docker-compose` commands are interchangeable with `podman` and `podman-compose`.
+
+> 🖥️ **Platform Notes**: 
+> - **macOS/Windows**: Requires Podman machine (VM) - see setup instructions below
+> - **Linux**: Runs natively without VM requirement
 
 ---
 
@@ -65,17 +78,55 @@ poetry -V
 
 ---
 
+### 🔧 Podman Machine Setup
+
+**Important**: On macOS and Windows, Podman requires a virtual machine to run containers. Follow these steps to initialize and start the Podman machine:
+**On Linux**: Podman runs natively without a machine, so you can skip the machine initialization steps below.
+
+#### 1. Initialize Podman Machine
+
+```bash
+# Initialize a new Podman machine (only needed once)
+podman machine init
+
+# Alternative: Initialize with custom settings
+# podman machine init --memory 4096 --cpus 2 --disk-size 50
+```
+
+#### 2. Start Podman Machine
+
+```bash
+# Start the Podman machine
+podman machine start
+
+# Verify the machine is running
+podman machine list
+```
+
+You should see output similar to:
+```
+NAME                     VM TYPE     CREATED      LAST UP            CPUS        MEMORY      DISK SIZE
+podman-machine-default*  qemu        2 weeks ago  Currently running  2           2.147GB     107.4GB
+```
+
+#### 3. Verify Podman Installation
+
+```bash
+# Test that Podman is working
+podman --version
+podman info
+
+# Test that you can run containers
+podman run hello-world
+```
+
+---
+
 ### Clone the Repository
 
 ```bash
 git clone https://github.com/SpaceGravimetryTUD/GRACE-Orbit-Residuals-db
 cd GRACE-Orbit-Residuals-db
-```
-
-Switch to the appropriate branch, e.g.:
-
-```bash
-git checkout v1-flat-data-test
 ```
 
 ---
@@ -106,7 +157,7 @@ source .env
 ```
 
 ---
-
+(THIS SHOULD GO INTO TROUBLE SHOOTING)
 ### Update `/etc/containers/registries.conf`
 
 If error is triggered when running timescaledb image, add the following line to `/etc/containers/registries.conf`:
@@ -135,13 +186,68 @@ podman exec -it postgis_container psql -U user -d $DATABASE_NAME -c "CREATE EXTE
 
 ---
 
-### Start the Database
+### 🗄️ Start the Database
+
+**Prerequisites**: Ensure your Podman machine is running (see Podman Machine Setup section above).
 
 ```bash
+# Verify Podman machine is running (macOS/Windows)
+podman machine list
+
+# Start the database containers
 podman-compose -f docker-compose.yml up -d
 ```
 
-Verify it's running:
+**Expected output:**
+```
+[+] Running 2/2
+ ✔ Container postgis_container   Started
+ ✔ Container timescaledb_container   Started  
+```
+
+#### Verify Database is Running
+
+```bash
+# Check container status
+podman ps
+
+# You should see containers similar to:
+# CONTAINER ID  IMAGE                     COMMAND     CREATED      STATUS      PORTS                   NAMES
+# abc123def456  postgis/postgis:latest    postgres    2 mins ago   Up 2 mins   0.0.0.0:5432->5432/tcp  postgis_container
+```
+
+#### Test Database Connection
+
+```bash
+# Test connection to the database
+podman exec -it postgis_container psql -U user -d $DATABASE_NAME -c "SELECT version();"
+```
+
+#### 🔧 Troubleshooting Database Startup
+
+If containers fail to start:
+
+```bash
+# Check logs
+podman-compose logs
+
+# Stop and remove containers
+podman-compose down
+
+# Restart with verbose output
+podman-compose -f docker-compose.yml up -d --force-recreate
+```
+
+If you see permission errors:
+```bash
+# Ensure proper subuid/subgid setup (Linux)
+echo "$USER:100000:65536" | sudo tee -a /etc/subuid
+echo "$USER:100000:65536" | sudo tee -a /etc/subgid
+
+# Restart Podman machine (macOS/Windows)
+podman machine stop
+podman machine start
+```
 
 ```bash
 podman ps
@@ -214,8 +320,6 @@ poetry run alembic revision --autogenerate -m "Describe schema change"
 # Apply the migration
 poetry run alembic upgrade head
 ```
-
-Future Enhancement: The PostGIS system table issue could be resolved by implementing schema-based separation or improving the Alembic configuration to automatically exclude PostGIS system tables.
 
 ---
 
@@ -307,6 +411,151 @@ poetry run pytest
 ├── postgresql.conf   # Custom DB configuration (optional)
 ├── LICENSE
 └── README.md
+```
+
+---
+
+## Container Management
+
+### Stopping Services
+
+```bash
+# Stop all containers
+podman-compose down
+
+# Stop containers and remove volumes (⚠️ destroys data)
+podman-compose down -v
+```
+
+### Managing Podman Machine
+
+```bash
+# Stop Podman machine (will stop all containers)
+podman machine stop
+
+# Start Podman machine
+podman machine start
+
+# Check machine status
+podman machine list
+
+# View machine details
+podman machine info
+```
+
+### Monitoring and Logs
+
+```bash
+# View logs for all services
+podman-compose logs
+
+# View logs for specific service
+podman-compose logs postgis_container
+
+# Follow logs in real-time
+podman-compose logs -f
+
+# Check container resource usage
+podman stats
+```
+
+### Cleanup Commands
+
+```bash
+# Remove stopped containers
+podman container prune
+
+# Remove unused images
+podman image prune
+
+# Remove unused volumes (⚠️ may delete data)
+podman volume prune
+
+# Complete cleanup (⚠️ removes everything)
+podman system prune -a
+```
+
+---
+
+## 🚨 Common Troubleshooting
+
+### Podman Machine Issues
+
+**Problem**: `Error: cannot connect to Podman socket`
+```bash
+# Solution: Start Podman machine
+podman machine start
+```
+
+**Problem**: `Error: VM already exists`
+```bash
+# Solution: Remove and recreate machine
+podman machine rm podman-machine-default
+podman machine init
+podman machine start
+```
+
+**Problem**: Container ports not accessible
+```bash
+# Solution: Check port forwarding and firewall
+podman machine ssh
+# Inside VM, check if ports are bound:
+ss -tlnp | grep 5432
+```
+
+### Database Connection Issues
+
+**Problem**: `Connection refused` to database
+```bash
+# Check container is running
+podman ps
+
+# Check database logs
+podman logs postgis_container
+
+# Test internal connectivity
+podman exec postgis_container pg_isready -U user
+```
+
+**Problem**: Permission denied errors
+```bash
+# Linux: Update subuid/subgid
+echo "$USER:100000:65536" | sudo tee -a /etc/subuid
+echo "$USER:100000:65536" | sudo tee -a /etc/subgid
+
+# macOS/Windows: Restart machine
+podman machine stop && podman machine start
+```
+
+### Registry Issues
+
+**Problem**: `Error: unable to pull image`
+```bash
+# Add to /etc/containers/registries.conf (Linux):
+echo 'unqualified-search-registries=["docker.io"]' | sudo tee -a /etc/containers/registries.conf
+
+# Or use fully qualified image names:
+podman pull docker.io/postgis/postgis:latest
+```
+
+### Performance Issues
+
+**Problem**: Slow database performance
+```bash
+# Increase machine resources
+podman machine rm podman-machine-default
+podman machine init --memory 8192 --cpus 4 --disk-size 100
+podman machine start
+```
+
+### Backup Database
+
+```bash
+# Create database backup
+podman exec postgis_container pg_dump -U user $DATABASE_NAME > backup.sql
+
+# Restore from backup
+podman exec -i postgis_container psql -U user $DATABASE_NAME < backup.sql
 ```
 
 ---

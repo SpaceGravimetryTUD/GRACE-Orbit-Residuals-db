@@ -22,8 +22,8 @@ SATELLITE_FIELDS:
   # - latitude_MP
   # - altitude_MP
   # - latitude_MP
-  # - source
-  # - variant
-  # - label
-  # - release
+  - source
+  - variant
+  - label
+  - release
   - datetime

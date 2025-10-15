@@ -37,18 +37,16 @@ class KBRGravimetry(Base):
     shadow_B    = Column(Integer)  # 0/1
     adtrack_B   = Column(Integer)  # 0 = descending, 1 = ascending
 
-    '''
-    # "middle-point"
-    longitude_MP = Column(Float, nullable=False)  # degrees
-    latitude_MP  = Column(Float, nullable=False)  # degrees
-    altitude_MP  = Column(Float)  # km
+    # "middle-point" (optional)
+    longitude_MP = Column(Float, nullable=True)  # degrees
+    latitude_MP  = Column(Float, nullable=True)  # degrees
+    altitude_MP  = Column(Float, nullable=True)  # km
 
-    #additional information
-    source       = Column(String) # source filename (without redundant particles)
-    variant      = Column(String) # processing variant (internal to CSR)
-    label        = Column(String) # solution month
-    release      = Column(String) # GRACE data processing version
-    '''
+    # additional information for flexible labeling
+    source       = Column(String, nullable=True) # source filename (without redundant particles)
+    variant      = Column(String, nullable=True) # processing variant (internal to CSR)
+    label        = Column(String, nullable=True) # solution month (RL06_YY-MM format)
+    release      = Column(String, nullable=True) # GRACE data processing version
 
     #derived quantities
     datetime = Column(DateTime, nullable=True)  # optional: datetime for convenience
