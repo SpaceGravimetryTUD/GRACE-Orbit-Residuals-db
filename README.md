@@ -2,17 +2,15 @@
 
 This project sets up a scalable geospatial data pipeline using **PostgreSQL + PostGIS + TimescaleDB** , **SQLAlchemy**, and **Podman Compose**. It facilitates efficient ingestion, validation, and querying of high-frequency satellite data from the GRACE mission.
 
+See the `CITATION.cff` file for proper citation format.
+
 ---
 
 ## 🌍 Context & Background
-
-We work with high-frequency geospatial time-series data from the GRACE satellite mission, specifically Level-1B range-rate residuals derived from inter-satellite Ka-band observations. These residuals may contain unexploited high-frequency geophysical signals used for scientific applications.
-
 ### Key dataset characteristics:
 
 - **Temporal resolution**: 5-second intervals
 - **Spatial attributes**: Latitude, longitude, altitude for GRACE A & B
-- **Data volume**: 2002–2017, approx. \~95 million records
 - **Target queries**: Time-span filtering, spatial bounding, and signal-based statistical analysis
 
 ---
@@ -560,7 +558,16 @@ podman exec -i postgis_container psql -U user $DATABASE_NAME < backup.sql
 
 ---
 
-## 📜 Licensing & Waiver
+## � Contributors
+
+This project was developed by the Space Gravimetry research group at Delft University of Technology:
+
+- **Jose Carlos Urra Llanusa** - Research Software Engineer
+- **Joao De Teixeira da Encarnacao** - Research Scientist  
+- **Selin Kubilay** - Research Engineer
+- **João Guimarães** - Software Developer
+
+## �📜 Licensing & Waiver
 
 Licensed under the MIT License.
 
